@@ -31,11 +31,9 @@ export default config({
       server = gameServer;
 
       // Connect the client to the server	(optional starting in v4.7)
-      await client.connect();
-      // Send a ping to confirm a successful connection
-      await client.db("EternalRealm").command({ ping: 1 });
+      // client.connect();
 
-      Log.success("Successfully connected to MongoDB!");
+      Log.success("Successfully connected to MongoDB");
 
       db = client.db("EternalRealm");
 
