@@ -7,8 +7,8 @@ import { MongoClient, ServerApiVersion, Db } from "mongodb";
  * Import your Room files
  */
 import { AuthRoom } from "./rooms/auth/AuthRoom";
-import Log from "./utils/utils";
 import { Server } from "colyseus";
+import { Log } from "./utils/utils";
 
 const uri =
   "mongodb+srv://admin:yiwei7398138@cluster0.xi6ic.mongodb.net/?retryWrites=true&w=majority";
@@ -37,12 +37,12 @@ export default config({
 
       db = client.db("EternalRealm");
 
-      gameServer.onShutdown(async () => {
-        if (client) {
-          await client.close();
-          Log.success("Successfully disconnected from MongoDB!");
-        }
-      });
+      // gameServer.onShutdown(async () => {
+      //   if (client) {
+      //     await client.close();
+      //     Log.success("Successfully disconnected from MongoDB!");
+      //   }
+      // });
     } catch (err) {
       Log.error(err + "");
     }

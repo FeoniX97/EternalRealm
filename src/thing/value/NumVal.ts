@@ -1,10 +1,12 @@
-import { listen } from "@colyseus/tools";
+import { type } from "@colyseus/schema";
 import Event from "../../event/Event";
-import EventSender from "../../event/EventSender";
 import Value from "./Value";
+import Thing from "../Thing";
 
 export default class NumVal extends Value {
   private base: number;
+
+  @type("number")
   private value: number;
 
   private increasePercentValue: number = 0;
@@ -12,26 +14,38 @@ export default class NumVal extends Value {
 
   private isPositive: boolean;
   private isInteger: boolean;
-  private limit: number = null;
 
-  constructor(value: number = 0, options?: NumValOptions) {
-    super();
+  limit: number = null;
 
-    this.value = value;
+  constructor(parent: Thing, base: number = 0, options?: NumValOptions) {
+    super(parent);
+
+    this.base = base;
     this.isPositive = options?.positive;
     this.isInteger = options?.integer;
-    this.limit = options?.limit ?? -1;
+    this.limit = options?.limit;
+
+    this.value = this.calc(
+      base,
+      this.increasePercentValue,
+      this.incrementPercentValue
+    );
   }
 
-  /** get/set the base value */
+  /** get the calculated value OR set the base value */
   val(newBaseVal?: number): number {
-    if (!newBaseVal) return this.value;
-    if (newBaseVal == this.base) return this.value;
+    if (newBaseVal == null || newBaseVal == this.base)
+      return this.calc(
+        this.base,
+        this.increasePercentValue,
+        this.incrementPercentValue
+      );
+
     // if (this.isPositive && calculatedValue < 0) newBaseVal = 0;
     // if (this.isInteger) newVal = Math.round(newVal);
     // if (this.limit != -1 && newVal > this.limit) newVal = this.limit;
 
-    const evt = new NumChangeEvent(this, this.limit, {
+    const evt = new NumChangeEvent(this, this.calc(), this.limit, {
       baseFrom: this.base,
       baseTo: newBaseVal,
     });
@@ -43,6 +57,7 @@ export default class NumVal extends Value {
     // if (this.isInteger) evt.to = Math.round(evt.to);
     // if (this.limit != -1 && evt.to > this.limit) evt.to = this.limit;
 
+    this.base = evt.baseTo;
     this.value = this.calc(
       evt.baseTo,
       this.increasePercentValue,
@@ -69,7 +84,7 @@ export default class NumVal extends Value {
   }
 
   increasePercent(incPercentVal: number): void {
-    const evt = new NumChangeEvent(this, this.limit, null, {
+    const evt = new NumChangeEvent(this, this.calc(), this.limit, null, {
       increasePercentFrom: this.increasePercentValue,
       increasePercentTo: this.increasePercentValue + incPercentVal,
     });
@@ -77,6 +92,7 @@ export default class NumVal extends Value {
     // num change event is blocked, stop the change
     if (evt.sendEventBefore()) return;
 
+    this.increasePercentValue = evt.increasePercentTo;
     this.value = this.calc(
       this.base,
       evt.increasePercentTo,
@@ -87,7 +103,7 @@ export default class NumVal extends Value {
   }
 
   incrementPercent(incPercentVal: number): void {
-    const evt = new NumChangeEvent(this, this.limit, null, null, {
+    const evt = new NumChangeEvent(this, this.calc(), this.limit, null, null, {
       incrementPercentFrom: this.incrementPercentValue,
       incrementPercentTo: this.incrementPercentValue + incPercentVal,
     });
@@ -95,6 +111,7 @@ export default class NumVal extends Value {
     // num change event is blocked, stop the change
     if (evt.sendEventBefore()) return;
 
+    this.incrementPercentValue = evt.incrementPercentTo;
     this.value = this.calc(
       this.base,
       this.increasePercentValue,
@@ -105,10 +122,18 @@ export default class NumVal extends Value {
   }
 
   calc(
-    base: number,
-    increasePercentValue: number,
-    incrementPercentValue: number
+    base?: number,
+    increasePercentValue?: number,
+    incrementPercentValue?: number
   ): number {
+    if (base == null) base = this.base;
+
+    if (increasePercentValue == null)
+      increasePercentValue = this.increasePercentValue;
+
+    if (incrementPercentValue == null)
+      incrementPercentValue = this.incrementPercentValue;
+
     let finalValue =
       base * (1 + increasePercentValue) * (1 + incrementPercentValue);
 
@@ -130,11 +155,23 @@ export default class NumVal extends Value {
       this.incrementPercentValue
     );
 
-    if (calculatedValue > this.limit) {
-      if (this.increasePercentValue == 0 && this.incrementPercentValue) {
-        // for value without increase/increments e.g. min of lifebar, just set the base directly instead
-        this.val(limit);
-      } else {
+    // console.log("this.increasePercentValue", this.increasePercentValue);
+    // console.log("this.incrementPercentValue", this.incrementPercentValue);
+    // console.log("calculatedValue", calculatedValue);
+    // console.log("limit", limit);
+
+    if (
+      this.increasePercentValue == 0 &&
+      this.incrementPercentValue == 0 &&
+      calculatedValue > limit
+    ) {
+      // for value without increase/increments e.g. min of lifebar, just set the base directly instead
+      this.val(limit);
+    } else if (
+      this.increasePercentValue != 0 ||
+      this.incrementPercentValue != 0
+    ) {
+      if (calculatedValue > this.limit) {
         // for value with increase/increments e.g. min of fire damage, re-calculate the new value using the new limit
         this.limit = limit;
         this.value = this.calc(
@@ -144,16 +181,24 @@ export default class NumVal extends Value {
         );
         new NumChangeEvent(
           this,
+          this.value,
           limit,
           { baseTo: this.base },
           { increasePercentTo: this.increasePercentValue },
           { incrementPercentTo: this.incrementPercentValue }
         ).sendEventAfter();
-      }
-    } else {
-      if (this.increasePercentValue != 0 || this.incrementPercentValue != 0)
+      } else {
         this.limit = limit;
+      }
     }
+  }
+
+  getIncreasePercentValue(): number {
+    return this.increasePercentValue;
+  }
+
+  getIncrementPercentValue(): number {
+    return this.incrementPercentValue;
   }
 }
 
@@ -166,7 +211,7 @@ export interface NumValOptions {
 export class NumChangeEvent extends Event {
   sender: NumVal;
 
-  private readonly limit: number = null;
+  limit: number = null;
 
   readonly baseFrom: number;
   /** changes only applied if `baseFrom` value is not null, which means there is a base change */
@@ -180,8 +225,12 @@ export class NumChangeEvent extends Event {
   /** changes only applied if `incrementPercentFrom` value is not null, which means there is an increment percent change */
   incrementPercentTo: number;
 
+  /** the original calculated value */
+  readonly originalTo: number;
+
   constructor(
     sender: NumVal,
+    originalTo: number,
     limit?: number,
     base?: { baseFrom?: number; baseTo: number },
     increase?: { increasePercentFrom?: number; increasePercentTo: number },
@@ -190,19 +239,20 @@ export class NumChangeEvent extends Event {
     super(sender);
 
     this.sender = sender;
+    this.originalTo = originalTo;
     this.limit = limit;
 
     this.baseFrom = base?.baseFrom;
     this.baseTo = base?.baseTo;
 
     this.increasePercentFrom = increase?.increasePercentFrom;
-    this.increasePercentTo = increase?.increasePercentTo;
+    this.increasePercentTo = increase?.increasePercentTo ?? 0;
 
     this.incrementPercentFrom = increment?.incrementPercentFrom;
-    this.incrementPercentTo = increment?.incrementPercentTo;
+    this.incrementPercentTo = increment?.incrementPercentTo ?? 0;
   }
 
-  /** get the final calculated value */
+  /** get the new calculated value */
   to(): number {
     let finalValue =
       this.baseTo *
@@ -212,5 +262,10 @@ export class NumChangeEvent extends Event {
     if (this.limit != null && finalValue > this.limit) finalValue = this.limit;
 
     return finalValue;
+  }
+
+  /** get the difference between the original value and the new calculated value */
+  diff(): number {
+    return this.to() - this.originalTo;
   }
 }

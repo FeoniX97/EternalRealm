@@ -23,7 +23,7 @@ export class AuthRoom extends Room<AuthRoomState> {
     });
 
     if (playerDoc) {
-      return {...playerDoc, id: playerDoc._id.toString()};
+      return { ...playerDoc, id: playerDoc._id.toString() };
     } else {
       throw new ServerError(400, "用户名或密码错误！");
     }
@@ -36,7 +36,10 @@ export class AuthRoom extends Room<AuthRoomState> {
     const character = new Character();
 
     // define rooms for the player using the playerID as token
-    server.define("resourceHUD_room_" + token, ResourceHUDRoom, { token, character });
+    server.define("resourceHUD_room_" + token, ResourceHUDRoom, {
+      token,
+      character,
+    });
 
     client.send("token", token);
   }

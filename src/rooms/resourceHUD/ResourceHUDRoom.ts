@@ -1,9 +1,10 @@
-import { Room, Client } from "@colyseus/core";
+import { Client } from "@colyseus/core";
 import { ResourceHUDRoomState } from "./ResourceHUDRoomState";
 import Character from "../../thing/living/character/Character";
 import { authenticateRoom } from "../util/utils";
+import MyRoom from "../MyRoom";
 
-export class ResourceHUDRoom extends Room<ResourceHUDRoomState> {
+export class ResourceHUDRoom extends MyRoom<ResourceHUDRoomState> {
   token: string;
   character: Character;
 
@@ -23,11 +24,17 @@ export class ResourceHUDRoom extends Room<ResourceHUDRoomState> {
   }
 
   async onAuth(client: any, options: any, request: any) {
+    if (this.clients.length > 0) return false;
+
     return authenticateRoom(options, this.token);
   }
 
   async onJoin(client: Client, options: any) {
     console.log(client.sessionId, "joined " + this.roomName + "!", options);
+
+    this.clock.setTimeout(() => {
+      this.character.core.str.inc(1);
+    }, 5000);
   }
 
   onLeave(client: Client, consented: boolean) {

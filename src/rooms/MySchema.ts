@@ -1,28 +1,9 @@
 import { Schema } from "@colyseus/schema";
-import Event from "../event/Event";
 import EventListener from "../event/EventListener";
 import EventSender from "../event/EventSender";
+import Event from "../event/Event";
 
-export default abstract class Thing
-  extends Schema
-  implements EventSender, EventListener
-{
-  eventListeners: Array<EventListener> = [];
-
-  readonly parent: Thing;
-
-  constructor(parent: Thing) {
-    super();
-
-    this.parent = parent;
-    this.parent?.hookEvent(this);
-  }
-
-  /** inform parent state that the child state has changed */
-  onStateChanged() {
-    this.parent?.onStateChanged();
-  }
-
+export default abstract class MySchema extends Schema implements EventListener {
   hookEvent(...eventSenders: EventSender[]): void {
     for (let eventSender of eventSenders) {
       const exists = eventSender.eventListeners.find(
@@ -45,10 +26,5 @@ export default abstract class Thing
     return false;
   }
 
-  onEventAfter(event: Event): void {
-    // send the received events to all hooked listeners also
-    for (let eventListener of this.eventListeners) {
-      eventListener.onEventAfter(event);
-    }
-  }
+  onEventAfter(event: Event): void {}
 }
