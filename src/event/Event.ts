@@ -14,7 +14,7 @@ export default abstract class Event {
    */
   sendEventBefore(): boolean {
     for (let eventListener of this.sender.eventListeners) {
-      eventListener.onEventBefore(this);
+      if (!this.blocked) eventListener.onEventBefore(this);
     }
 
     return this.blocked;
@@ -22,7 +22,7 @@ export default abstract class Event {
 
   sendEventAfter(): void {
     for (let eventListener of this.sender.eventListeners) {
-      eventListener.onEventAfter(this);
+      if (!this.blocked) eventListener.onEventAfter(this);
     }
   }
 }

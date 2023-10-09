@@ -1,19 +1,17 @@
 import { Room, Client, ClientArray, ServerError } from "@colyseus/core";
 import { AuthRoomState } from "./AuthRoomState";
-import { IncomingMessage } from "http";
 import { db, server } from "../../app.config";
-import { ResourceHUDRoom } from "../resourceHUD/ResourceHUDRoom";
+import { CharacterPanelRoom } from "../panel/CharacterPanelRoom";
 import Character from "../../thing/living/character/Character";
 
 export class AuthRoom extends Room<AuthRoomState> {
   onCreate(options: any) {
     this.setState(new AuthRoomState());
 
-    this.onMessage("type", (client, message) => {
-      //
-      // handle "type" message
-      //
-    });
+    // this.onMessage("*", (client, type, message) => {
+    //   console.log("type: " + type);
+    //   console.log("message: " + message)
+    // });
   }
 
   async onAuth(client: any, options: any, request: any) {
@@ -36,7 +34,7 @@ export class AuthRoom extends Room<AuthRoomState> {
     const character = new Character();
 
     // define rooms for the player using the playerID as token
-    server.define("resourceHUD_room_" + token, ResourceHUDRoom, {
+    server.define("character_panel_room_" + token, CharacterPanelRoom, {
       token,
       character,
     });

@@ -1,26 +1,14 @@
-import { type } from "@colyseus/schema";
 import Thing from "../../Thing";
 import RangeVal from "../../value/RangeVal";
 import NumVal from "../../value/NumVal";
 import { fromPercent } from "../../../utils/utils";
 
-abstract class Damage extends Thing {
-  @type(RangeVal)
+export abstract class Damage extends Thing {
   fire: RangeVal;
-
-  @type(RangeVal)
   cold: RangeVal;
-
-  @type(RangeVal)
   lightning: RangeVal;
-
-  @type(RangeVal)
   chaos: RangeVal;
-
-  @type(NumVal)
   speed: NumVal;
-
-  @type(NumVal)
   crtRate: NumVal;
 
   constructor(parent: Thing) {
@@ -35,20 +23,22 @@ abstract class Damage extends Thing {
   }
 }
 
-class Attack extends Damage {}
+export class Attack extends Damage {
+  physical: RangeVal;
+
+  constructor(parent: Thing) {
+    super(parent);
+
+    this.physical = new RangeVal(this, 1);
+  }
+}
+
 class Spell extends Damage {}
 
 export default class Offence extends Thing {
-  @type(Attack)
   attack: Attack;
-
-  @type(Spell)
   spell: Spell;
-
-  @type(NumVal)
   accuracyRating: NumVal;
-
-  @type(NumVal)
   crtDamage: NumVal;
 
   constructor(parent: Thing) {

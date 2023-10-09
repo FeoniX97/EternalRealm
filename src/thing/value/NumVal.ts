@@ -1,10 +1,16 @@
 import { type } from "@colyseus/schema";
 import Event from "../../event/Event";
 import Value from "./Value";
-import Thing from "../Thing";
+import Thing, { Options } from "../Thing";
+
+export interface NumValOptions extends Options {
+  positive?: boolean;
+  integer?: boolean;
+  limit?: number;
+}
 
 export default class NumVal extends Value {
-  private base: number;
+  base: number;
 
   @type("number")
   private value: number;
@@ -18,7 +24,7 @@ export default class NumVal extends Value {
   limit: number = null;
 
   constructor(parent: Thing, base: number = 0, options?: NumValOptions) {
-    super(parent);
+    super(parent, options);
 
     this.base = base;
     this.isPositive = options?.positive;
@@ -71,14 +77,14 @@ export default class NumVal extends Value {
 
   /** increase the base value */
   inc(incBaseVal: number): void {
-    if (incBaseVal <= 0) return;
+    // if (incBaseVal <= 0) return;
 
     this.val(this.base + incBaseVal);
   }
 
   /** decrease the base value */
   dec(decBaseVal: number): void {
-    if (decBaseVal <= 0) return;
+    // if (decBaseVal <= 0) return;
 
     this.val(this.base - decBaseVal);
   }
@@ -200,12 +206,6 @@ export default class NumVal extends Value {
   getIncrementPercentValue(): number {
     return this.incrementPercentValue;
   }
-}
-
-export interface NumValOptions {
-  positive?: boolean;
-  integer?: boolean;
-  limit?: number;
 }
 
 export class NumChangeEvent extends Event {

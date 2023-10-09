@@ -1,20 +1,27 @@
-import { Schema } from "@colyseus/schema";
 import Event from "../event/Event";
 import EventListener from "../event/EventListener";
 import EventSender from "../event/EventSender";
 
-export default abstract class Thing
-  extends Schema
-  implements EventSender, EventListener
+export interface Options {
+  /** the custom ID which is used to receive action from client */
+  entityID?: string;
+}
+
+export default abstract class Thing implements EventSender, EventListener
 {
   eventListeners: Array<EventListener> = [];
 
   readonly parent: Thing;
+  readonly children: Array<Thing> = [];
 
-  constructor(parent: Thing) {
-    super();
+  /** the custom ID which is used to receive action from client */
+  readonly entityID: string;
 
+  constructor(parent: Thing, options?: Options) {
     this.parent = parent;
+
+    this.entityID = options?.entityID;
+    this.parent?.children.push(this);
     this.parent?.hookEvent(this);
   }
 
@@ -50,5 +57,44 @@ export default abstract class Thing
     for (let eventListener of this.eventListeners) {
       eventListener.onEventAfter(event);
     }
+  }
+
+  /**
+   * on receiving action from client, override this method to handle action
+   * @param entities the child entities to receive the action, goes down all the way to the last entity
+   * @param payload the payload json
+   * @param onError the callback function to send error message back to client
+   */
+  onAction(entities: string, payload: any, onError: (errCode: string, message: string) => void) {
+    // console.log(
+    //   (this.entityID
+    //     ? this.entityID
+    //     : this.constructor.name) +
+    //         " received action, child entities: " +
+    //         entities +
+    //         ", payload: " +
+    //         payload
+    // );
+
+    this.passdownAction(entities, payload, onError);
+  }
+
+  /** pass down the action to targeted child */
+  passdownAction(entities: string, payload: any, onError: (errCode: string, message: string) => void) {
+    if (!entities) return;
+
+    let entityArr = entities.split(".");
+    let headEntity = entityArr[0];
+    let restEntities: string;
+
+    if (entityArr.length > 1) restEntities = entityArr.slice(1).join(".");
+
+    this.children.forEach((child) => {
+      if (
+        child.entityID === headEntity ||
+        child.constructor.name === headEntity
+      )
+        child.onAction(restEntities, payload, onError);
+    });
   }
 }

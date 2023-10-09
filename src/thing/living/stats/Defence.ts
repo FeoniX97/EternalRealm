@@ -3,19 +3,10 @@ import Thing from "../../Thing";
 import NumVal from "../../value/NumVal";
 
 class Resistance extends Thing {
-  @type(NumVal)
   physical: NumVal;
-
-  @type(NumVal)
   fire: NumVal;
-
-  @type(NumVal)
   cold: NumVal;
-
-  @type(NumVal)
   lightning: NumVal;
-
-  @type(NumVal)
   chaos: NumVal;
 
   constructor(parent: Thing) {
@@ -30,16 +21,9 @@ class Resistance extends Thing {
 }
 
 export default class Defence extends Thing {
-  @type(NumVal)
   armour: NumVal;
-
-  @type(NumVal)
   evasionRating: NumVal;
-
-  @type(NumVal)
   blockRate: NumVal;
-
-  @type(Resistance)
   resistance: Resistance
 
   constructor(parent: Thing) {

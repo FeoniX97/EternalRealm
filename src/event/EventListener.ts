@@ -2,6 +2,7 @@ import Event from "./Event";
 import EventSender from "./EventSender";
 
 export default interface EventListener {
+  
   /**
    *
    * add self to the event sender's listener list

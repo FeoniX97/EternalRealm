@@ -5,10 +5,7 @@ import Value from "./Value";
 import Thing from "../Thing";
 
 export default class RangeVal extends Value {
-  @type(NumVal)
   readonly min: NumVal;
-
-  @type(NumVal)
   readonly max: NumVal;
 
   constructor(

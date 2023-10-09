@@ -1,18 +1,14 @@
-import { type } from "@colyseus/schema";
 import Living from "../Living";
 import RangeVal from "../../value/RangeVal";
-import Thing from "../../Thing";
+import Thing, { Options } from "../../Thing";
 import Event from "../../../event/Event";
 
 export default class Character extends Living {
-  @type("string")
   playerID: string = "Hello";
-
-  @type(RangeVal)
   exp: RangeVal;
 
-  constructor(parent: Thing) {
-    super(parent);
+  constructor(parent?: Thing, options?: Options) {
+    super(parent, options);
 
     this.exp = new RangeVal(this, 100, 100);
   }
