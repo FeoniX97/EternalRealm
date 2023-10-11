@@ -1,8 +1,9 @@
-import { type } from "@colyseus/schema";
 import Event from "../../event/Event";
 import NumVal, { NumChangeEvent, NumValOptions } from "./NumVal";
 import Value from "./Value";
 import Thing from "../Thing";
+
+export interface RangeValOptions extends NumValOptions {}
 
 export default class RangeVal extends Value {
   readonly min: NumVal;
@@ -12,9 +13,9 @@ export default class RangeVal extends Value {
     parent: Thing,
     min: number,
     max?: number,
-    options?: NumValOptions
+    options?: RangeValOptions
   ) {
-    super(parent);
+    super(parent, options);
 
     this.min = new NumVal(this, min, options);
     this.max = new NumVal(this, max ?? min, options);

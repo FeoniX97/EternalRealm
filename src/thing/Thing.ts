@@ -1,3 +1,4 @@
+import { Clock } from "colyseus";
 import Event from "../event/Event";
 import EventListener from "../event/EventListener";
 import EventSender from "../event/EventSender";
@@ -5,6 +6,8 @@ import EventSender from "../event/EventSender";
 export interface Options {
   /** the custom ID which is used to receive action from client */
   entityID?: string;
+  /** the room clock of Colyseus */
+  clock?: Clock;
 }
 
 export default abstract class Thing implements EventSender, EventListener
@@ -17,10 +20,14 @@ export default abstract class Thing implements EventSender, EventListener
   /** the custom ID which is used to receive action from client */
   readonly entityID: string;
 
+  /** the room clock of Colyseus */
+  readonly clock: Clock;
+
   constructor(parent: Thing, options?: Options) {
     this.parent = parent;
 
     this.entityID = options?.entityID;
+    this.clock = options?.clock;
     this.parent?.children.push(this);
     this.parent?.hookEvent(this);
   }

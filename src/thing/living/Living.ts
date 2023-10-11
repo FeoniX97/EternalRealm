@@ -16,8 +16,10 @@ export default abstract class Living extends Thing {
   constructor(parent: Thing, options?: Options) {
     super(parent, options);
 
+    console.log('living: ' + JSON.stringify(options.clock));
+
     this.level = new NumVal(this, 1, { entityID: "Level" });
-    this.resource = new Resource(this);
+    this.resource = new Resource(this, options);
     this.core = new Core(this);
     this.offence = new Offence(this);
     this.defence = new Defence(this);
