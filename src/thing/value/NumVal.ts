@@ -31,21 +31,12 @@ export default class NumVal extends Value {
     this.isInteger = options?.integer;
     this.limit = options?.limit;
 
-    this.value = this.calc(
-      base,
-      this.increasePercentValue,
-      this.incrementPercentValue
-    );
+    this.value = this.calc(base, this.increasePercentValue, this.incrementPercentValue);
   }
 
   /** get the calculated value OR set the base value */
   val(newBaseVal?: number): number {
-    if (newBaseVal == null || newBaseVal == this.base)
-      return this.calc(
-        this.base,
-        this.increasePercentValue,
-        this.incrementPercentValue
-      );
+    if (newBaseVal == null || newBaseVal == this.base) return this.calc(this.base, this.increasePercentValue, this.incrementPercentValue);
 
     // if (this.isPositive && calculatedValue < 0) newBaseVal = 0;
     // if (this.isInteger) newVal = Math.round(newVal);
@@ -64,11 +55,7 @@ export default class NumVal extends Value {
     // if (this.limit != -1 && evt.to > this.limit) evt.to = this.limit;
 
     this.base = evt.baseTo;
-    this.value = this.calc(
-      evt.baseTo,
-      this.increasePercentValue,
-      this.incrementPercentValue
-    );
+    this.value = this.calc(evt.baseTo, this.increasePercentValue, this.incrementPercentValue);
 
     evt.sendEventAfter();
 
@@ -99,11 +86,7 @@ export default class NumVal extends Value {
     if (evt.sendEventBefore()) return;
 
     this.increasePercentValue = evt.increasePercentTo;
-    this.value = this.calc(
-      this.base,
-      evt.increasePercentTo,
-      this.incrementPercentValue
-    );
+    this.value = this.calc(this.base, evt.increasePercentTo, this.incrementPercentValue);
 
     evt.sendEventAfter();
   }
@@ -118,30 +101,19 @@ export default class NumVal extends Value {
     if (evt.sendEventBefore()) return;
 
     this.incrementPercentValue = evt.incrementPercentTo;
-    this.value = this.calc(
-      this.base,
-      this.increasePercentValue,
-      evt.incrementPercentTo
-    );
+    this.value = this.calc(this.base, this.increasePercentValue, evt.incrementPercentTo);
 
     evt.sendEventAfter();
   }
 
-  calc(
-    base?: number,
-    increasePercentValue?: number,
-    incrementPercentValue?: number
-  ): number {
+  calc(base?: number, increasePercentValue?: number, incrementPercentValue?: number): number {
     if (base == null) base = this.base;
 
-    if (increasePercentValue == null)
-      increasePercentValue = this.increasePercentValue;
+    if (increasePercentValue == null) increasePercentValue = this.increasePercentValue;
 
-    if (incrementPercentValue == null)
-      incrementPercentValue = this.incrementPercentValue;
+    if (incrementPercentValue == null) incrementPercentValue = this.incrementPercentValue;
 
-    let finalValue =
-      base * (1 + increasePercentValue) * (1 + incrementPercentValue);
+    let finalValue = base * (1 + increasePercentValue) * (1 + incrementPercentValue);
 
     if (this.limit != null && finalValue > this.limit) finalValue = this.limit;
 
@@ -155,44 +127,22 @@ export default class NumVal extends Value {
   /** if specified, the final value will not be above this new limit\
    * If the current value is above the new limit, re-calculate the new value using the new limit and send an after event */
   setLimit(limit: number): void {
-    const calculatedValue = this.calc(
-      this.base,
-      this.increasePercentValue,
-      this.incrementPercentValue
-    );
+    const calculatedValue = this.calc(this.base, this.increasePercentValue, this.incrementPercentValue);
 
     // console.log("this.increasePercentValue", this.increasePercentValue);
     // console.log("this.incrementPercentValue", this.incrementPercentValue);
     // console.log("calculatedValue", calculatedValue);
     // console.log("limit", limit);
 
-    if (
-      this.increasePercentValue == 0 &&
-      this.incrementPercentValue == 0 &&
-      calculatedValue > limit
-    ) {
+    if (this.increasePercentValue == 0 && this.incrementPercentValue == 0 && calculatedValue > limit) {
       // for value without increase/increments e.g. min of lifebar, just set the base directly instead
       this.val(limit);
-    } else if (
-      this.increasePercentValue != 0 ||
-      this.incrementPercentValue != 0
-    ) {
+    } else if (this.increasePercentValue != 0 || this.incrementPercentValue != 0) {
       if (calculatedValue > this.limit) {
         // for value with increase/increments e.g. min of fire damage, re-calculate the new value using the new limit
         this.limit = limit;
-        this.value = this.calc(
-          this.base,
-          this.increasePercentValue,
-          this.incrementPercentValue
-        );
-        new NumChangeEvent(
-          this,
-          this.value,
-          limit,
-          { baseTo: this.base },
-          { increasePercentTo: this.increasePercentValue },
-          { incrementPercentTo: this.incrementPercentValue }
-        ).sendEventAfter();
+        this.value = this.calc(this.base, this.increasePercentValue, this.incrementPercentValue);
+        new NumChangeEvent(this, this.value, limit, { baseTo: this.base }, { increasePercentTo: this.increasePercentValue }, { incrementPercentTo: this.incrementPercentValue }).sendEventAfter();
       } else {
         this.limit = limit;
       }
@@ -228,14 +178,7 @@ export class NumChangeEvent extends Event {
   /** the original calculated value */
   readonly originalTo: number;
 
-  constructor(
-    sender: NumVal,
-    originalTo: number,
-    limit?: number,
-    base?: { baseFrom?: number; baseTo: number },
-    increase?: { increasePercentFrom?: number; increasePercentTo: number },
-    increment?: { incrementPercentFrom?: number; incrementPercentTo: number }
-  ) {
+  constructor(sender: NumVal, originalTo: number, limit?: number, base?: { baseFrom?: number; baseTo: number }, increase?: { increasePercentFrom?: number; increasePercentTo: number }, increment?: { incrementPercentFrom?: number; incrementPercentTo: number }) {
     super(sender);
 
     this.sender = sender;
@@ -254,10 +197,7 @@ export class NumChangeEvent extends Event {
 
   /** get the new calculated value */
   to(): number {
-    let finalValue =
-      this.baseTo *
-      (1 + this.increasePercentTo) *
-      (1 + this.incrementPercentTo);
+    let finalValue = this.baseTo * (1 + this.increasePercentTo) * (1 + this.incrementPercentTo);
 
     if (this.limit != null && finalValue > this.limit) finalValue = this.limit;
 

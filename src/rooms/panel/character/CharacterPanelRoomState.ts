@@ -1,11 +1,12 @@
 import { type } from "@colyseus/schema";
-import Character from "../../thing/living/character/Character";
-import MySchema from "../MySchema";
-import NumValState from "../state/NumValState";
-import MyRoom from "../MyRoom";
-import RangeValState from "../state/RangeValState";
-import { Attack, Damage } from "../../thing/living/stats/Offence";
-import Event from "../../event/Event";
+import Character from "../../../thing/living/character/Character";
+import MySchema from "../../MySchema";
+import NumValState from "../../state/NumValState";
+import MyRoom from "../../MyRoom";
+import RangeValState from "../../state/RangeValState";
+import { Attack, Damage } from "../../../thing/living/stats/Offence";
+import Event from "../../../event/Event";
+import Player from "../../../thing/living/character/player/Player";
 
 class DamageState extends MySchema {
   @type(RangeValState)
@@ -36,14 +37,7 @@ class DamageState extends MySchema {
     this.speed = new NumValState(damage.speed, room);
     this.crtRate = new NumValState(damage.crtRate, room);
 
-    this.hookEvent(
-      this.fire,
-      this.cold,
-      this.lightning,
-      this.chaos,
-      this.speed,
-      this.crtRate
-    );
+    this.hookEvent(this.fire, this.cold, this.lightning, this.chaos, this.speed, this.crtRate);
   }
 
   onEventAfter(event: Event): void {
@@ -78,7 +72,7 @@ export class AttDamageState extends DamageState {
 export class SpellDamageState extends DamageState {}
 
 export class CharacterPanelRoomState extends MySchema {
-  character: Character;
+  player: Player;
 
   @type(NumValState)
   level: NumValState;
@@ -143,32 +137,17 @@ export class CharacterPanelRoomState extends MySchema {
   @type(NumValState)
   chaosResistance: NumValState;
 
-  constructor(room: MyRoom<CharacterPanelRoomState>, character: Character) {
+  constructor(room: MyRoom<CharacterPanelRoomState>, player: Player) {
     super(room);
 
-    this.character = character;
+    this.player = player;
 
     room.clock.setTimeout(() => {
       room.rebuildState();
     }, 100);
   }
 
-  onAction(
-    entities: string,
-    payload: any,
-    onError: (errCode: string, message: string) => void
-  ): void {
-    // console.log(
-    //   "room received action, child entities: " +
-    //     entities +
-    //     ", payload: " +
-    //     payload
-    // );
-
-    this.character.onAction(
-      entities.split(".").slice(1).join("."),
-      payload,
-      onError
-    );
+  onAction(entities: string, payload: any, onError: (errCode: string, message: string) => void): void {
+    this.player.onAction(entities, payload, onError);
   }
 }

@@ -28,11 +28,6 @@ export default class NumValState extends MySchema {
       this.onDispose();
       this.room.rebuildState(this);
     }
-
-    // if (event.sender == this.numVal) {
-    //   this.onDispose();
-    //   this.room.rebuildState(this);
-    // }
   }
 
   onDispose(): void {

@@ -2,9 +2,9 @@ import Living from "../Living";
 import RangeVal from "../../value/RangeVal";
 import Thing, { Options } from "../../Thing";
 import Event from "../../../event/Event";
+import SmallLifePotion from "../../item/potion/SmallLifePotion";
 
 export default class Character extends Living {
-  playerID: string = "Hello";
   exp: RangeVal;
 
   constructor(parent?: Thing, options?: Options) {
@@ -28,4 +28,5 @@ export default class Character extends Living {
       this.level.inc(1);
     }
   }
+
 }

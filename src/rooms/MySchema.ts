@@ -7,7 +7,7 @@ import MyRoom from "./MyRoom";
 export default abstract class MySchema extends Schema implements EventListener, EventSender {
   eventListeners: Array<EventListener> = [];
 
-  room: MyRoom<MySchema>
+  room: MyRoom<MySchema>;
 
   constructor(room: MyRoom<MySchema>) {
     super();
@@ -15,11 +15,11 @@ export default abstract class MySchema extends Schema implements EventListener, 
     this.room = room;
   }
 
+  onDispose(): void {}
+
   hookEvent(...eventSenders: EventSender[]): void {
     for (let eventSender of eventSenders) {
-      const exists = eventSender.eventListeners.find(
-        (listener) => listener === this
-      );
+      const exists = eventSender.eventListeners.find((listener) => listener === this);
 
       if (!exists) eventSender.eventListeners.push(this);
     }
@@ -27,9 +27,7 @@ export default abstract class MySchema extends Schema implements EventListener, 
 
   unhookEvent(...eventSenders: EventSender[]): void {
     for (let eventSender of eventSenders) {
-      eventSender.eventListeners = eventSender.eventListeners.filter(
-        (listener) => listener != this
-      );
+      eventSender.eventListeners = eventSender.eventListeners.filter((listener) => listener != this);
     }
   }
 

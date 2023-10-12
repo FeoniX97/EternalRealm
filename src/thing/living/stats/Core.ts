@@ -4,9 +4,6 @@ import Event from "../../../event/Event";
 import Living from "../Living";
 import { fromPercent } from "../../../utils/utils";
 
-// actions
-// Core.Str/Agi/Int { action: inc/dec }
-
 export default class Core extends Thing {
   parent: Living;
 
@@ -27,29 +24,18 @@ export default class Core extends Thing {
   onEventAfter(event: Event): void {
     if (event.sender == this.str) {
       this.parent.resource.life.max.inc((event as NumChangeEvent).diff() * 6);
-      this.parent.defence.resistance.physical.inc(
-        (event as NumChangeEvent).diff() * fromPercent(0.1)
-      );
+      this.parent.defence.resistance.physical.inc((event as NumChangeEvent).diff() * fromPercent(0.1));
     } else if (event.sender == this.agi) {
-      this.parent.defence.evasionRating.inc(
-        (event as NumChangeEvent).diff() * 6
-      );
-      this.parent.offence.accuracyRating.inc(
-        (event as NumChangeEvent).diff() * 3
-      );
+      this.parent.defence.evasionRating.inc((event as NumChangeEvent).diff() * 6);
+      this.parent.offence.accuracyRating.inc((event as NumChangeEvent).diff() * 3);
     } else if (event.sender == this.int) {
-      this.parent.resource.es.max.increasePercent(
-        (event as NumChangeEvent).diff() * fromPercent(1)
-      );
+      this.parent.resource.es.max.increasePercent((event as NumChangeEvent).diff() * fromPercent(1));
       this.parent.resource.mana.max.inc((event as NumChangeEvent).diff() * 3);
     }
   }
 
-  onAction(
-    entities: string,
-    payload: any,
-    onError: (errCode: string, message: string) => void
-  ): void {
+  /** Character.Core.Str/Agi/Int { action: inc/dec } */
+  onAction(entities: string, payload: any, onError: (errCode: string, message: string) => void): void {
     // console.log(
     //   this.entityID
     //     ? this.entityID
@@ -60,9 +46,7 @@ export default class Core extends Thing {
     //         JSON.stringify(payload)
     // );
 
-    let target = this.children.find(
-      (child) => child.entityID === entities
-    ) as NumVal;
+    let target = this.children.find((child) => child.entityID === entities) as NumVal;
 
     if (payload.action === "inc") {
       if (this.unallocated.base > 0) {

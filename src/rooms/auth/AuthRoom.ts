@@ -1,8 +1,10 @@
 import { Room, Client, ClientArray, ServerError } from "@colyseus/core";
 import { AuthRoomState } from "./AuthRoomState";
 import { db, server } from "../../app.config";
-import { CharacterPanelRoom } from "../panel/CharacterPanelRoom";
+import { CharacterPanelRoom } from "../panel/character/CharacterPanelRoom";
 import Character from "../../thing/living/character/Character";
+import Player from "../../thing/living/character/player/Player";
+import InventoryPanelRoom from "../panel/inventory/InventoryPanelRoom";
 
 export class AuthRoom extends Room<AuthRoomState> {
   onCreate(options: any) {
@@ -31,12 +33,17 @@ export class AuthRoom extends Room<AuthRoomState> {
     const token = player.id;
 
     // create player character instance
-    const character = new Character(null, { clock: this.clock });
+    const playerInstance = new Player(null, { clock: this.clock });
 
     // define rooms for the player using the playerID as token
     server.define("character_panel_room_" + token, CharacterPanelRoom, {
       token,
-      character,
+      player: playerInstance,
+    });
+
+    server.define("inventory_panel_room_" + token, InventoryPanelRoom, {
+      token,
+      inventory: playerInstance.inventory,
     });
 
     client.send("token", token);

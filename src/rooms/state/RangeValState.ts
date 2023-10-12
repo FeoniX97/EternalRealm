@@ -30,12 +30,6 @@ export default class RangeValState extends MySchema {
       this.onDispose();
       this.room.rebuildState(this);
     }
-
-    // if (event.sender == this.rangeVal.min) {
-    //   this.min = this.rangeVal.min.val();
-    // } else if (event.sender == this.rangeVal.max) {
-    //   this.max = this.rangeVal.max.val();
-    // }
   }
 
   onDispose(): void {

@@ -4,6 +4,9 @@ export default abstract class Event {
   sender: EventSender;
   blocked: boolean;
 
+  errCode: string;
+  errMessage: string;
+
   constructor(sender: EventSender) {
     this.sender = sender;
   }
@@ -24,5 +27,13 @@ export default abstract class Event {
     for (let eventListener of this.sender.eventListeners) {
       if (!this.blocked) eventListener.onEventAfter(this);
     }
+  }
+
+  static instanceOfListener(obj: any): obj is EventListener {
+    return "hookEvent" in obj;
+  }
+
+  static instanceOfSender(obj: any): obj is EventSender {
+    return "eventListeners" in obj;
   }
 }
