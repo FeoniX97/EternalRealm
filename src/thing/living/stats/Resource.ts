@@ -34,16 +34,42 @@ class ResourceVal extends RangeVal {
   }
 }
 
+class ESResourceVal extends ResourceVal {
+  rechargePercentPerSec: number = .1;
+
+  private rechargeDelayed: Delayed;
+
+  onRecharge = () => {
+    this.min.inc(this.max.val() * this.rechargePercentPerSec);
+  }
+
+  onEventAfter(event: Event): void {
+    super.onEventAfter(event);
+
+    if (event.sender == this.min || event.sender == this.max) {
+      if (this.min.val() < this.max.val()) {
+        // start recharge
+        if (!this.rechargeDelayed) {
+          this.rechargeDelayed = this.clock.setInterval(this.onRecharge, 1000);
+        }
+      } else if (this.min.val() >= this.max.val() && this.rechargeDelayed) {
+          this.rechargeDelayed.clear();
+          this.rechargeDelayed = null;
+      }
+    }
+  }
+}
+
 export default class Resource extends Thing {
   life: ResourceVal;
   mana: ResourceVal;
-  es: ResourceVal;
+  es: ESResourceVal;
 
   constructor(parent: Thing, options?: Options) {
     super(parent, options);
 
     this.life = new ResourceVal(this, {...options, entityID: 'Life'});
     this.mana = new ResourceVal(this, {...options, entityID: 'Mana'});
-    this.es = new ResourceVal(this, {...options, entityID: 'Es'});
+    this.es = new ESResourceVal(this, {...options, entityID: 'Es'});
   }
 }

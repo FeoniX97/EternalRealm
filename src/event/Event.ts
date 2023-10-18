@@ -1,3 +1,4 @@
+import EventListener from "./EventListener";
 import EventSender from "./EventSender";
 
 export default abstract class Event {

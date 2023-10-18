@@ -11,11 +11,13 @@ export default class RangeVal extends Value {
 
   constructor(
     parent: Thing,
-    min: number,
+    min?: number,
     max?: number,
     options?: RangeValOptions
   ) {
     super(parent, options);
+
+    min = min ?? 0;
 
     this.min = new NumVal(this, min, options);
     this.max = new NumVal(this, max ?? min, options);

@@ -1,5 +1,5 @@
 import { type, ArraySchema } from "@colyseus/schema";
-import Inventory from "../../../thing/living/character/player/Inventory";
+import Inventory, { InventoryDiscardEvent } from "../../../thing/living/character/player/Inventory";
 import MyRoom from "../../MyRoom";
 import MySchema from "../../MySchema";
 import Item from "../../../thing/item/Item";
@@ -95,6 +95,7 @@ export class ItemState extends MySchema {
   }
 
   onDispose(): void {
+    super.onDispose();
     this.unhookEvent(this.item);
   }
 }
@@ -113,9 +114,25 @@ export default class InventoryPanelRoomState extends MySchema {
     room.clock.setTimeout(() => {
       room.rebuildState();
     }, 100);
+
+    this.hookEvent(inventory);
   }
 
   onAction(entities: string, payload: any, onError: (errCode: string, message: string) => void): void {
     this.inventory.onAction(entities, payload, onError);
+  }
+
+  onEventAfter(event: Event): void {
+    super.onEventAfter(event);
+
+    // listen to inventory discard event
+    if (event instanceof InventoryDiscardEvent && event.sender == this.inventory) {
+      this.room.rebuildState();
+    }
+  }
+
+  onDispose(): void {
+    super.onDispose();
+    this.unhookEvent(this.inventory);
   }
 }

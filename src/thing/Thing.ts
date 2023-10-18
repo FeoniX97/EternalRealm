@@ -71,6 +71,8 @@ export default abstract class Thing implements EventSender, EventListener {
     this.clock = options?.clock;
     this.parent?.children.push(this);
     this.parent?.hookEvent(this);
+
+    this.onCreated();
   }
 
   /** inform parent state that the child state has changed */
@@ -160,6 +162,15 @@ export default abstract class Thing implements EventSender, EventListener {
   executeAction(id: string, payload: any, onError: (errCode: string, message: string) => void) {
     const action = this.actions.find((_action) => _action.id === id);
     action?.handleAction(this, payload, onError);
+  }
+
+  /** initialize thing here (e.g. hook events)\
+   * called after constructor */
+  onCreated() {}
+
+  /** unhook all listeners here */
+  onDestroy() {
+    this.children.forEach(child => child.onDestroy());
   }
 }
 
