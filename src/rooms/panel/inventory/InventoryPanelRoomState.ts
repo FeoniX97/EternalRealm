@@ -6,6 +6,7 @@ import Item from "../../../thing/item/Item";
 import { Action, ActionEvent } from "../../../thing/Thing";
 import Rarity from "../../../thing/Rarity";
 import Event from "../../../event/Event";
+import Equipment from "../../../thing/item/equipment/Equipment";
 
 class ActionState extends MySchema {
   @type("string")
@@ -14,11 +15,15 @@ class ActionState extends MySchema {
   @type("string")
   label: string;
 
+  @type("boolean")
+  enabled: boolean;
+
   constructor(room: MyRoom<InventoryPanelRoomState>, action: Action) {
     super(room);
 
     this.id = action.id;
     this.label = action.label;
+    this.enabled = action.enabled;
   }
 }
 
@@ -55,8 +60,16 @@ export class ItemState extends MySchema {
   @type(RarityState)
   rarity: RarityState;
 
-  @type("string")
-  customDesc: string;
+  @type(["string"])
+  customDesc = new ArraySchema<string>();
+
+  /** for equipments */
+  @type(["string"])
+  basicAffixes = new ArraySchema<string>();
+
+  /** for equipments */
+  @type(["string"])
+  magicAffixes = new ArraySchema<string>();
 
   @type("string")
   desc: string;
@@ -74,9 +87,18 @@ export class ItemState extends MySchema {
     this.reqLevel = item.reqLevel;
     this.type = item.type;
     this.rarity = new RarityState(room, item.rarity);
-    this.customDesc = item.getCustomDesc();
-
+    this.customDesc.push(...item.getCustomDesc());
     this.desc = item.desc;
+
+    if (item instanceof Equipment) {
+      for (let basicAffix of item.basicAffixes) {
+        this.basicAffixes.push(basicAffix.desc());
+      }
+
+      for (let magicAffix of item.magicAffixes) {
+        this.magicAffixes.push(magicAffix.desc());
+      }
+    }
 
     for (let action of item.actions) {
       this.actions.push(new ActionState(room, action));

@@ -12,7 +12,8 @@ export interface Options {
 
 export interface ActionOptions {
   label?: string;
-  event?: Event;
+  events?: Event[];
+  enabled?: boolean;
 }
 
 /**
@@ -25,27 +26,47 @@ export class Action {
   id: string;
   callback: (payload: any) => void;
   label?: string;
-  event?: Event;
+  events: Event[];
+  enabled = true;
 
-  handleAction(thing: Thing, payload: any, onError: (errCode: string, errMessage: string) => void) {
-    if (this.event?.sendEventBefore()) {
-      onError(this.event.errCode, this.event.errMessage);
-      return;
+  handleAction(thing: Thing, payload?: any, onError?: (errCode: string, errMessage: string) => void) {
+    if (!this.enabled) return;
+    
+    // do pre check for all events of this action
+    for (let event of this.events) {
+      if (event.sendEventBefore()) {
+        onError?.(event.errCode, event.errMessage);
+        return;
+      }
     }
 
-    this.callback({...payload, self: thing});
+    // call the action function
+    this.callback({ ...payload, self: thing });
 
-    this.event?.sendEventAfter();
+    // send all after events
+    for (let event of this.events) {
+      event.sendEventAfter();
+    }
+
+    // send action after event, for frontend UI change
     new ActionEvent(thing).sendEventAfter();
 
-    if (this.event?.errMessage) onError(this.event.errCode, this.event.errMessage);
+    // check is any event encounter error, and send errMessage back to client
+    let errEvent = this.events.find((event) => event.errMessage);
+    if (errEvent) onError?.(errEvent.errCode, errEvent.errMessage);
+
+    // reset the errors of all events
+    this.events.forEach((event) => {
+      event.errCode = event.errMessage = null;
+    });
   }
 
   constructor(id: string, callback: (payload: any) => void, options?: ActionOptions) {
     this.id = id;
     this.callback = callback;
     this.label = options?.label ?? id;
-    this.event = options?.event;
+    this.events = options?.events ? options?.events : [];
+    this.enabled = options?.enabled != null ? options?.enabled : true;
   }
 }
 
@@ -102,7 +123,10 @@ export default abstract class Thing implements EventSender, EventListener {
    * `note:` will not send after event to self to prevent infinite loop
    */
   onEventAfter(event: Event): void {
-    // send the received events to all hooked listeners also
+    // will not redirect events send by self, to prevent parent from receiving multiple duplicate events
+    if (event.sender == this) return;
+
+    // redirect the received events to all hooked listeners also
     for (let eventListener of this.eventListeners) {
       if (eventListener != this) eventListener.onEventAfter(event);
     }
@@ -159,18 +183,50 @@ export default abstract class Thing implements EventSender, EventListener {
     target.callback = newCallback ?? target.callback;
   }
 
-  executeAction(id: string, payload: any, onError: (errCode: string, message: string) => void) {
+  enableAction(id: string) {
+    const target = this.actions.find((action) => action.id === id);
+
+    if (!target) {
+      throw new Error("failed to update action, the action with id does not exist: " + id);
+    }
+
+    target.enabled = true;
+  }
+
+  disableAction(id: string) {
+    const target = this.actions.find((action) => action.id === id);
+
+    if (!target) {
+      throw new Error("failed to update action, the action with id does not exist: " + id);
+    }
+
+    target.enabled = false;
+  }
+
+  addActionEvent(id: string, event: Event) {
+    const target = this.actions.find((action) => action.id === id);
+
+    if (!target) {
+      throw new Error("the registering action with id does not exist: " + id);
+    }
+
+    target.events.push(event);
+  }
+
+  executeAction(id: string, payload?: any, onError?: (errCode: string, message: string) => void) {
     const action = this.actions.find((_action) => _action.id === id);
     action?.handleAction(this, payload, onError);
   }
 
-  /** initialize thing here (e.g. hook events)\
-   * called after constructor */
+  /** initialize thing here (e.g. hook events), called after the base constructor\
+   * do not read constructor values here as they might not be initialized\
+   * do not set constructor values here as they might be overriden
+   * */
   onCreated() {}
 
   /** unhook all listeners here */
   onDestroy() {
-    this.children.forEach(child => child.onDestroy());
+    this.children.forEach((child) => child.onDestroy());
   }
 }
 

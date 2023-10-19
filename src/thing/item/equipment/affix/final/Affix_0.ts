@@ -1,7 +1,7 @@
 import Affix from "../Affix";
 
-export default class Affix_0 extends Affix {
-  private value: number = 0;
+export default class extends Affix {
+  private value: number = 5;
 
   desc(): string {
     return `生命上限 + ${this.value}`;

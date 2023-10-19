@@ -36,16 +36,6 @@ export default class Core extends Thing {
 
   /** Character.Core.Str/Agi/Int { action: inc/dec } */
   onAction(entities: string, payload: any, onError: (errCode: string, message: string) => void): void {
-    // console.log(
-    //   this.entityID
-    //     ? this.entityID
-    //     : this.constructor.name +
-    //         " received action, child entities: " +
-    //         entities +
-    //         ", payload: " +
-    //         JSON.stringify(payload)
-    // );
-
     let target = this.children.find((child) => child.entityID === entities) as NumVal;
 
     if (payload.action === "inc") {
@@ -53,7 +43,7 @@ export default class Core extends Thing {
         this.unallocated.dec(1);
         target.inc(1);
       } else {
-        onError("test", "可分配属性点不足！");
+        onError(null, "可分配属性点不足！");
       }
     } else if (payload.action === "dec" && target.base > 1) {
       target.dec(1);

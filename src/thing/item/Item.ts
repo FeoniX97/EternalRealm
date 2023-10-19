@@ -41,17 +41,20 @@ export default abstract class Item extends Thing {
     this.desc = options?.desc ?? "这个作者很懒，什么都没写";
     this.type = options?.type ?? "物品";
     this.rarity = options?.rarity ?? Rarity.normal;
+  }
 
-    this.hookEvent(this);
+  onCreated(): void {
+      super.onCreated();
 
-    this.registerAction("use", this.onUse, { event: new ItemUseEvent(this), label: "使用" });
+      this.hookEvent(this);
+      this.registerAction("use", this.onUse, { events: [new ItemUseEvent(this)], label: "使用" });
   }
 
   protected abstract onUse(payload: any): void;
 
   /** the custom desc of the displaying popup of the item in client */
-  getCustomDesc(): string {
-    return "";
+  getCustomDesc(): string[] {
+    return [];
   }
 
   onEventBefore(event: Event): boolean {

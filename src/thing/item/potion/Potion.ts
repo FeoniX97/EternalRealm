@@ -16,8 +16,8 @@ export default abstract class Potion extends Item {
     this.charges = new RangeVal(this, 5);
   }
 
-  getCustomDesc(): string {
-    return super.getCustomDesc() + `充能 ${this.charges.min.base}/${this.charges.max.val()}`;
+  getCustomDesc(): string[] {
+    return [...super.getCustomDesc(), `充能 ${this.charges.min.base}/${this.charges.max.val()}`];
   }
 
   onEventBefore(event: Event): boolean {

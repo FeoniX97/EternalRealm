@@ -14,12 +14,12 @@ export abstract class Damage extends Thing {
   constructor(parent: Thing) {
     super(parent);
 
-    this.fire = new RangeVal(this, 1);
-    this.cold = new RangeVal(this, 1);
-    this.lightning = new RangeVal(this, 1);
-    this.chaos = new RangeVal(this, 1);
-    this.speed = new NumVal(this, 1.1);
-    this.crtRate = new NumVal(this, 0);
+    this.fire = new RangeVal(this);
+    this.cold = new RangeVal(this);
+    this.lightning = new RangeVal(this);
+    this.chaos = new RangeVal(this);
+    this.speed = new NumVal(this);
+    this.crtRate = new NumVal(this);
   }
 }
 

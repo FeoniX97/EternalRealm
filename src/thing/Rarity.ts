@@ -8,8 +8,8 @@ export default class Rarity {
  }
 
  static normal: Rarity = new Rarity('普通', 0);
- static magic: Rarity = new Rarity('精良', 0);
- static rare: Rarity = new Rarity('稀有', 0);
- static mythical: Rarity = new Rarity('史诗', 0);
- static unique: Rarity = new Rarity('独特', 0);
+ static magic: Rarity = new Rarity('精良', 1);
+ static rare: Rarity = new Rarity('稀有', 2);
+ static mythical: Rarity = new Rarity('史诗', 3);
+ static unique: Rarity = new Rarity('独特', 4);
 }
