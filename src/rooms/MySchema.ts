@@ -13,6 +13,10 @@ export default abstract class MySchema extends Schema implements EventListener, 
     super();
 
     this.room = room;
+
+    room.clock.setTimeout(() => {
+      room.rebuildState();
+    }, 100);
   }
 
   onDispose(): void {}

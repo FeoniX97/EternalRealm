@@ -1,7 +1,10 @@
 import { Room } from "@colyseus/core";
 import MySchema from "./MySchema";
+import { authenticateRoom } from "./util/utils";
 
 export default abstract class MyRoom<T extends MySchema> extends Room<T> {
+  protected token: string;
+
   abstract rebuildState(sender?: MySchema): void;
 
   onCreate(options: any): void | Promise<any> {
@@ -11,4 +14,10 @@ export default abstract class MyRoom<T extends MySchema> extends Room<T> {
       });
     });
   }
+
+  // async onAuth(client: any, options: any, request: any) {
+  //   if (this.clients.length > 0) return false;
+
+  //   return authenticateRoom(options, this.token);
+  // }
 }

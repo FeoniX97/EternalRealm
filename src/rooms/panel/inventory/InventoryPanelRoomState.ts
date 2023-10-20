@@ -133,10 +133,6 @@ export default class InventoryPanelRoomState extends MySchema {
 
     this.inventory = inventory;
 
-    room.clock.setTimeout(() => {
-      room.rebuildState();
-    }, 100);
-
     this.hookEvent(inventory);
   }
 

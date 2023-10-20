@@ -5,6 +5,7 @@ import { CharacterPanelRoom } from "../panel/character/CharacterPanelRoom";
 import Character from "../../thing/living/character/Character";
 import Player from "../../thing/living/character/player/Player";
 import InventoryPanelRoom from "../panel/inventory/InventoryPanelRoom";
+import ResourceGUIRoom from "../gui/ResourceGUIRoom";
 
 export class AuthRoom extends Room<AuthRoomState> {
   onCreate(options: any) {
@@ -17,6 +18,8 @@ export class AuthRoom extends Room<AuthRoomState> {
   }
 
   async onAuth(client: any, options: any, request: any) {
+    console.log('joining auth room, verifying id');
+
     let playerDoc = await db.collection("players").findOne({
       username: options.username,
       password: options.password,
@@ -30,6 +33,8 @@ export class AuthRoom extends Room<AuthRoomState> {
   }
 
   async onJoin(client: Client, options: any, player: any) {
+    console.log('joined auth room');
+
     const token = player.id;
 
     // create player character instance
@@ -46,6 +51,15 @@ export class AuthRoom extends Room<AuthRoomState> {
       inventory: playerInstance.inventory,
     });
 
+    server.define("resource_gui_panel_room_" + token, ResourceGUIRoom, {
+      token,
+      player: playerInstance,
+    });
+
     client.send("token", token);
+  }
+
+  onLeave(client: Client<this["clients"] extends ClientArray<infer U, any> ? U : never, this["clients"] extends ClientArray<infer _, infer U> ? U : never>, consented?: boolean): void | Promise<any> {
+      console.log('leaving auth room');
   }
 }

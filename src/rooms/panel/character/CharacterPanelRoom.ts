@@ -22,11 +22,11 @@ export class CharacterPanelRoom extends MyRoom<CharacterPanelRoomState> {
     this.setState(new CharacterPanelRoomState(this, player));
   }
 
-  async onAuth(client: any, options: any, request: any) {
-    if (this.clients.length > 0) return false;
+  // async onAuth(client: any, options: any, request: any) {
+  //   if (this.clients.length > 0) return false;
 
-    return authenticateRoom(options, this.token);
-  }
+  //   return authenticateRoom(options, this.token);
+  // }
 
   async onJoin(client: Client, options: any) {
     console.log(client.sessionId, "joined " + this.roomName + "!", options);

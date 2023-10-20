@@ -141,10 +141,6 @@ export class CharacterPanelRoomState extends MySchema {
     super(room);
 
     this.player = player;
-
-    room.clock.setTimeout(() => {
-      room.rebuildState();
-    }, 100);
   }
 
   onAction(entities: string, payload: any, onError: (errCode: string, message: string) => void): void {
