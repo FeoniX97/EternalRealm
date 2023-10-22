@@ -1,4 +1,4 @@
-import Thing from "../../Thing";
+import Thing, { Options } from "../../Thing";
 import RangeVal from "../../value/RangeVal";
 import NumVal from "../../value/NumVal";
 import { fromPercent } from "../../../utils/utils";
@@ -11,25 +11,25 @@ export abstract class Damage extends Thing {
   speed: NumVal;
   crtRate: NumVal;
 
-  constructor(parent: Thing) {
-    super(parent);
+  protected onPopulated(options?: Options): void {
+    super.onPopulated(options);
 
-    this.fire = new RangeVal(this);
-    this.cold = new RangeVal(this);
-    this.lightning = new RangeVal(this);
-    this.chaos = new RangeVal(this);
-    this.speed = new NumVal(this);
-    this.crtRate = new NumVal(this);
+    this.fire = new RangeVal(this, { entityID: "fire", ...this.parseOptions(options) });
+    this.cold = new RangeVal(this, { entityID: "cold", ...this.parseOptions(options) });
+    this.lightning = new RangeVal(this, { entityID: "lightning", ...this.parseOptions(options) });
+    this.chaos = new RangeVal(this, { entityID: "chaos", ...this.parseOptions(options) });
+    this.speed = new NumVal(this, { entityID: "speed", ...this.parseOptions(options) });
+    this.crtRate = new NumVal(this, { entityID: "crtRate", ...this.parseOptions(options) });
   }
 }
 
 export class Attack extends Damage {
   physical: RangeVal;
 
-  constructor(parent: Thing) {
-    super(parent);
+  protected onPopulated(options?: Options): void {
+    super.onPopulated(options);
 
-    this.physical = new RangeVal(this, 1);
+    this.physical = new RangeVal(this, { min: 1, entityID: "physical", ...this.parseOptions(options) });
   }
 }
 
@@ -41,12 +41,12 @@ export default class Offence extends Thing {
   accuracyRating: NumVal;
   crtDamage: NumVal;
 
-  constructor(parent: Thing) {
-    super(parent);
+  protected onPopulated(options?: Options): void {
+    super.onPopulated(options);
 
-    this.attack = new Attack(this);
-    this.spell = new Spell(this);
-    this.accuracyRating = new NumVal(this, 100);
-    this.crtDamage = new NumVal(this, fromPercent(100));
+    this.attack = new Attack(this, { entityID: "attack", ...this.parseOptions(options) });
+    this.spell = new Spell(this, { entityID: "spell", ...this.parseOptions(options) });
+    this.accuracyRating = new NumVal(this, { base: 100, entityID: "accuracyRating", ...this.parseOptions(options) });
+    this.crtDamage = new NumVal(this, { base: fromPercent(100), entityID: "crtDamage", ...this.parseOptions(options) });
   }
 }

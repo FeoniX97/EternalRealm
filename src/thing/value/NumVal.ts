@@ -4,34 +4,39 @@ import Value from "./Value";
 import Thing, { Options } from "../Thing";
 
 export interface NumValOptions extends Options {
+  base?: number;
+  increasePercent?: number;
+  incrementPercent?: number;
   positive?: boolean;
   integer?: boolean;
   limit?: number;
 }
 
 export default class NumVal extends Value {
-  base: number;
+  base: number = null;
 
   @type("number")
   private value: number;
 
-  private increasePercentValue: number = 0;
-  private incrementPercentValue: number = 0;
+  private increasePercentValue: number = null;
+  private incrementPercentValue: number = null;
 
-  private isPositive: boolean;
-  private isInteger: boolean;
+  private isPositive: boolean = null;
+  private isInteger: boolean = null;
 
   limit: number = null;
 
-  constructor(parent: Thing, base: number = 0, options?: NumValOptions) {
+  constructor(parent: Thing, options?: NumValOptions) {
     super(parent, options);
 
-    this.base = base;
-    this.isPositive = options?.positive;
-    this.isInteger = options?.integer;
-    this.limit = options?.limit;
+    options = { ...options, ...this.parseOptions(options) };
 
-    this.value = this.calc(base, this.increasePercentValue, this.incrementPercentValue);
+    this.base = options?.json?.base ? options?.json?.base : options?.base ? options?.base : 0;
+    this.increasePercentValue = options?.json?.increasePercent ? options?.json?.increasePercent : options?.increasePercent ? options?.increasePercent : 0;
+    this.incrementPercentValue = options?.json?.incrementPercent ? options?.json?.incrementPercent : options?.incrementPercent ? options?.incrementPercent : 0;
+    this.isPositive = options?.positive !== undefined ? options?.positive : true;
+    this.isInteger = options?.integer !== undefined ? options?.integer : false;
+    this.limit = options?.limit !== undefined ? options?.limit : null;
   }
 
   /** get the calculated value OR set the base value */
@@ -77,10 +82,16 @@ export default class NumVal extends Value {
   }
 
   increasePercent(incPercentVal: number): void {
-    const evt = new NumChangeEvent(this, this.calc(), this.limit, null, {
-      increasePercentFrom: this.increasePercentValue,
-      increasePercentTo: this.increasePercentValue + incPercentVal,
-    });
+    const evt = new NumChangeEvent(
+      this,
+      this.calc(),
+      this.limit,
+      { baseTo: this.base },
+      {
+        increasePercentFrom: this.increasePercentValue,
+        increasePercentTo: this.increasePercentValue + incPercentVal,
+      }
+    );
 
     // num change event is blocked, stop the change
     if (evt.sendEventBefore()) return;
@@ -92,7 +103,7 @@ export default class NumVal extends Value {
   }
 
   incrementPercent(incPercentVal: number): void {
-    const evt = new NumChangeEvent(this, this.calc(), this.limit, null, null, {
+    const evt = new NumChangeEvent(this, this.calc(), this.limit, { baseTo: this.base }, null, {
       incrementPercentFrom: this.incrementPercentValue,
       incrementPercentTo: this.incrementPercentValue + incPercentVal,
     });
@@ -129,11 +140,6 @@ export default class NumVal extends Value {
   setLimit(limit: number): void {
     const calculatedValue = this.calc(this.base, this.increasePercentValue, this.incrementPercentValue);
 
-    // console.log("this.increasePercentValue", this.increasePercentValue);
-    // console.log("this.incrementPercentValue", this.incrementPercentValue);
-    // console.log("calculatedValue", calculatedValue);
-    // console.log("limit", limit);
-
     if (this.increasePercentValue == 0 && this.incrementPercentValue == 0 && calculatedValue > limit) {
       // for value without increase/increments e.g. min of lifebar, just set the base directly instead
       this.val(limit);
@@ -155,6 +161,14 @@ export default class NumVal extends Value {
 
   getIncrementPercentValue(): number {
     return this.incrementPercentValue;
+  }
+
+  toJSON() {
+    return {
+      base: this.base,
+      increasePercent: this.increasePercentValue,
+      incrementPercent: this.incrementPercentValue,
+    };
   }
 }
 

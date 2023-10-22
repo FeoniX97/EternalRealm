@@ -19,14 +19,8 @@ export default class NumValState extends MySchema {
   }
 
   onEventAfter(event: Event): void {
-    if (this.eventListeners.length > 0) {
-      // send the received events to all hooked listeners also
-      for (let eventListener of this.eventListeners) {
-        eventListener.onEventAfter(event);
-      }
-    } else {
-      this.onDispose();
-      this.room.rebuildState(this);
+    if (event.sender == this.numVal) {
+      this.value = this.numVal.val();
     }
   }
 

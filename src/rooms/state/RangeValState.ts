@@ -17,22 +17,18 @@ export default class RangeValState extends MySchema {
     this.max = rangeVal.max.val();
     this.rangeVal = rangeVal;
 
-    this.hookEvent(rangeVal.min, rangeVal.max);
+    this.hookEvent(rangeVal);
   }
 
   onEventAfter(event: Event): void {
-    if (this.eventListeners.length > 0) {
-      // send the received events to all hooked listeners also
-      for (let eventListener of this.eventListeners) {
-        eventListener.onEventAfter(event);
-      }
-    } else {
-      this.onDispose();
-      this.room.rebuildState(this);
-    }
+    if (event.sender == this.rangeVal.min)
+      this.min = this.rangeVal.min.val();
+
+    if (event.sender == this.rangeVal.max)
+      this.max = this.rangeVal.max.val();
   }
 
   onDispose(): void {
-    this.unhookEvent(this.rangeVal.min, this.rangeVal.max);
+    this.unhookEvent(this.rangeVal);
   }
 }

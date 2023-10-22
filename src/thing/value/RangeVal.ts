@@ -1,26 +1,27 @@
 import Event from "../../event/Event";
+import Thing from "../Thing";
 import NumVal, { NumChangeEvent, NumValOptions } from "./NumVal";
 import Value from "./Value";
-import Thing from "../Thing";
 
-export interface RangeValOptions extends NumValOptions {}
+export interface RangeValOptions extends NumValOptions {
+  min?: number;
+  max?: number;
+}
 
 export default class RangeVal extends Value {
-  readonly min: NumVal;
-  readonly max: NumVal;
+  min: NumVal;
+  max: NumVal;
 
-  constructor(
-    parent: Thing,
-    min?: number,
-    max?: number,
-    options?: RangeValOptions
-  ) {
+  constructor(parent: Thing, options?: RangeValOptions) {
     super(parent, options);
+  }
 
-    min = min ?? 0;
+  protected onPopulated(options?: RangeValOptions): void {
+    super.onPopulated(options);
 
-    this.min = new NumVal(this, min, options);
-    this.max = new NumVal(this, max ?? min, options);
+    let min = options?.json?.min ? options?.json?.min : options?.min ? options?.min : 0;
+    this.min = new NumVal(this, { ...options, base: min });
+    this.max = new NumVal(this, { ...options, base: options?.json?.max ? options?.json?.max : options?.max ? options?.max : min });
 
     this.hookEvent(this.min, this.max);
   }
@@ -29,11 +30,7 @@ export default class RangeVal extends Value {
     if (event.sender == this.min) {
       // prevent min from greater than max
       if ((event as NumChangeEvent).to() > this.max.val()) {
-        if (
-          (event as NumChangeEvent).sender.getIncreasePercentValue() == 0 &&
-          (event as NumChangeEvent).sender.getIncrementPercentValue() == 0
-        )
-          (event as NumChangeEvent).baseTo = this.max.val();
+        if ((event as NumChangeEvent).sender.getIncreasePercentValue() == 0 && (event as NumChangeEvent).sender.getIncrementPercentValue() == 0) (event as NumChangeEvent).baseTo = this.max.val();
         else (event as NumChangeEvent).limit = this.max.val();
       }
     } else if (event.sender == this.max) {
@@ -42,5 +39,12 @@ export default class RangeVal extends Value {
     }
 
     return false;
+  }
+
+  toJSON() {
+    return {
+      min: this.min.toJSON(),
+      max: this.max.toJSON(),
+    };
   }
 }

@@ -9,9 +9,12 @@ import { MongoClient, ServerApiVersion, Db } from "mongodb";
 import { AuthRoom } from "./rooms/auth/AuthRoom";
 import { Server } from "colyseus";
 import { Log } from "./utils/utils";
+import ResourceGUIRoom from "./rooms/gui/ResourceGUIRoom";
+import Player from "./thing/living/character/player/Player";
+import { CharacterPanelRoom } from "./rooms/panel/character/CharacterPanelRoom";
+import InventoryPanelRoom from "./rooms/panel/inventory/InventoryPanelRoom";
 
-const uri =
-  "mongodb+srv://admin:yiwei7398138@cluster0.xi6ic.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://admin:yiwei7398138@cluster0.xi6ic.mongodb.net/?retryWrites=true&w=majority";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {

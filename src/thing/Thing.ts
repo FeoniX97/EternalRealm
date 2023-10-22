@@ -2,12 +2,22 @@ import { Clock } from "colyseus";
 import Event from "../event/Event";
 import EventListener from "../event/EventListener";
 import EventSender from "../event/EventSender";
+import { db } from "../app.config";
+import { ObjectId } from "mongodb";
 
 export interface Options {
-  /** the custom ID which is used to receive action from client */
+  /** the unique name in each Thing which is the field in DB and to receive action from client */
   entityID?: string;
   /** the room clock of Colyseus */
   clock?: Clock;
+  /** the data read from DB */
+  json?: any;
+  /** the `collection` name of this Thing in the DB, `id` also need to set for persistance storage */
+  collection?: string;
+  /** the `id` of this Thing in the DB, `collection` name also need to set for persistance storage  */
+  id?: string;
+  /** is this Thing the root of the Thing tree? (Is it the most top ancestor?) */
+  isRoot?: boolean;
 }
 
 export interface ActionOptions {
@@ -31,7 +41,7 @@ export class Action {
 
   handleAction(thing: Thing, payload?: any, onError?: (errCode: string, errMessage: string) => void) {
     if (!this.enabled) return;
-    
+
     // do pre check for all events of this action
     for (let event of this.events) {
       if (event.sendEventBefore()) {
@@ -73,6 +83,8 @@ export class Action {
 export default abstract class Thing implements EventSender, EventListener {
   eventListeners: Array<EventListener> = [];
 
+  /** the most top ancestor Thing, normally refer to the top document for DB */
+  readonly root: Thing;
   readonly parent: Thing;
   readonly children: Array<Thing> = [];
 
@@ -80,27 +92,39 @@ export default abstract class Thing implements EventSender, EventListener {
   readonly entityID: string;
 
   /** the room clock of Colyseus */
-  readonly clock: Clock;
+  clock: Clock;
+
+  /** the `id` of this Thing in the DB, `collection` name also need to set for persistance storage  */
+  id?: string;
+
+  /** the `collection` name of this Thing in the DB, `id` also need to set for persistance storage */
+  collection?: string;
 
   /** the list of actions executable by client */
   readonly actions: Action[] = [];
 
   constructor(parent: Thing, options?: Options) {
+    if (parent?.root) this.root = parent?.root;
+    else this.root = options?.isRoot ? this : null;
+
     this.parent = parent;
+
+    // id and collection only for roots
+    if (options?.isRoot) {
+      this.id = options?.id;
+      this.collection = options?.collection;
+    }
 
     this.entityID = options?.entityID;
     this.clock = options?.clock;
+
     this.parent?.children.push(this);
     this.parent?.hookEvent(this);
 
-    this.onCreated();
+    this.populateFromDB(options);
   }
 
-  /** inform parent state that the child state has changed */
-  onStateChanged() {
-    this.parent?.onStateChanged();
-  }
-
+  /***************************** BEGIN Events ************************/
   hookEvent(...eventSenders: EventSender[]): void {
     for (let eventSender of eventSenders) {
       const exists = eventSender.eventListeners.find((listener) => listener === this);
@@ -132,6 +156,7 @@ export default abstract class Thing implements EventSender, EventListener {
     }
   }
 
+  /***************************** BEGIN Actions ************************/
   /**
    * on receiving action from client, override this method to handle action
    * @param entities the child entities to receive the action, goes down all the way to the last entity
@@ -158,7 +183,7 @@ export default abstract class Thing implements EventSender, EventListener {
     if (entityArr.length > 1) restEntities = entityArr.slice(1).join(".");
 
     this.children.forEach((child) => {
-      if (child.entityID === headEntity || child.constructor.name === headEntity) child.onAction(restEntities, payload, onError);
+      if (child.entityID && child.entityID === headEntity) child.onAction(restEntities, payload, onError);
     });
   }
 
@@ -218,16 +243,82 @@ export default abstract class Thing implements EventSender, EventListener {
     action?.handleAction(this, payload, onError);
   }
 
-  /** initialize thing here (e.g. hook events), called after the base constructor\
-   * do not read constructor values here as they might not be initialized\
-   * do not set constructor values here as they might be overriden
-   * */
-  onCreated() {}
+  /***************************** BEGIN Room ************************/
+  /** set the clock in frontend room, will propagate down to all children */
+  setClock(clock: Clock) {
+    this.clock = clock;
+
+    this.children.forEach((child) => child.setClock(clock));
+  }
 
   /** unhook all listeners here */
-  onDestroy() {
+  protected onDestroy() {
     this.children.forEach((child) => child.onDestroy());
   }
+
+  /***************************** BEGIN Database ************************/
+  /** convert this thing into JSON which is used to store into DB */
+  toJSON() {
+    if (this.children.length <= 0) return null;
+
+    let data: any = {};
+
+    for (let child of this.children) {
+      if (child.entityID) {
+        data[child.entityID] = child.toJSON();
+      }
+    }
+
+    return data;
+  }
+
+  /** read the object in DB and call the onPopulated callback */
+  protected async populateFromDB(options?: Options) {
+    // return the options directly if no persistance
+    if (!this.collection) {
+      this.onPopulated(options);
+      return;
+    }
+
+    if (this.id) {
+      let data = await db.collection(this.collection).findOne({ _id: new ObjectId(this.id) });
+      options.json = data;
+    }
+
+    this.onPopulated(options);
+
+    // create a new object in DB if id is not provided
+    if (!this.id) await this.saveToDB();
+  }
+
+  /** save the root object to DB */
+  protected async saveToDB() {
+    if (!this.root) throw new Error("failed to save to DB, no root is specified");
+    if (!this.root.collection) return;
+
+    // create a new object in DB if id is not provided
+    if (!this.root.id) {
+      const result = await db.collection(this.root.collection).insertOne(this.root.toJSON());
+      this.root.id = result.insertedId.toString();
+      return;
+    }
+
+    // update the object in DB
+    await db.collection(this.root.collection).updateOne({ _id: new ObjectId(this.root.id) }, { $set: this.root.toJSON() });
+  }
+
+  /** parse and retrieve the common options given by parent (e.g. room clock, the JSON data from DB) */
+  protected parseOptions(parentOptions?: Options): any {
+    if (!this.entityID) return { clock: parentOptions?.clock };
+
+    let data = parentOptions?.json?.[this.entityID];
+
+    if (data) return { json: data, clock: parentOptions?.clock };
+    else return { clock: parentOptions?.clock };
+  }
+
+  /** the data is ready, implement this method to create children, hook events etc... */
+  protected onPopulated(options?: Options) {}
 }
 
 export class ActionEvent extends Event {

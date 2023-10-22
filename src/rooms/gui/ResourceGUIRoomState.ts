@@ -4,8 +4,11 @@ import RangeValState from "../state/RangeValState";
 import MyRoom from "../MyRoom";
 import Player from "../../thing/living/character/player/Player";
 
-export default class extends MySchema {
+export default class ResourceGUIRoomState extends MySchema {
   player: Player;
+
+  @type(RangeValState)
+  es: RangeValState;
 
   @type(RangeValState)
   life: RangeValState;
@@ -14,14 +17,17 @@ export default class extends MySchema {
   mana: RangeValState;
 
   @type(RangeValState)
-  es: RangeValState;
-
-  @type(RangeValState)
   exp: RangeValState;
 
-  constructor(room: MyRoom<MySchema>, player: Player) {
+  constructor(room: MyRoom<ResourceGUIRoomState>, player: Player) {
     super(room);
 
     this.player = player;
+
+    this.es = new RangeValState(player.resource.es, room);
+    this.life = new RangeValState(player.resource.life, room);
+    this.mana = new RangeValState(player.resource.mana, room);
+    this.es = new RangeValState(player.resource.es, room);
+    this.exp = new RangeValState(player.exp, room);
   }
 }

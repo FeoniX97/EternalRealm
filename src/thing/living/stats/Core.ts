@@ -1,4 +1,4 @@
-import Thing from "../../Thing";
+import Thing, { Options } from "../../Thing";
 import NumVal, { NumChangeEvent } from "../../value/NumVal";
 import Event from "../../../event/Event";
 import Living from "../Living";
@@ -12,13 +12,13 @@ export default class Core extends Thing {
   int: NumVal;
   unallocated: NumVal;
 
-  constructor(parent: Living) {
-    super(parent);
+  protected onPopulated(options?: Options): void {
+    super.onPopulated(options);
 
-    this.str = new NumVal(this, 1, { entityID: "Str" });
-    this.agi = new NumVal(this, 1, { entityID: "Agi" });
-    this.int = new NumVal(this, 1, { entityID: "Int" });
-    this.unallocated = new NumVal(this, 5);
+    this.str = new NumVal(this, { base: 1, entityID: "str", ...this.parseOptions(options) });
+    this.agi = new NumVal(this, { base: 1, entityID: "agi", ...this.parseOptions(options) });
+    this.int = new NumVal(this, { base: 1, entityID: "int", ...this.parseOptions(options) });
+    this.unallocated = new NumVal(this, { base: 5, entityID: "unallocated", ...this.parseOptions(options) });
   }
 
   onEventAfter(event: Event): void {

@@ -1,11 +1,9 @@
 import { type } from "@colyseus/schema";
-import Character from "../../../thing/living/character/Character";
 import MySchema from "../../MySchema";
 import NumValState from "../../state/NumValState";
 import MyRoom from "../../MyRoom";
 import RangeValState from "../../state/RangeValState";
 import { Attack, Damage } from "../../../thing/living/stats/Offence";
-import Event from "../../../event/Event";
 import Player from "../../../thing/living/character/player/Player";
 
 class DamageState extends MySchema {
@@ -36,19 +34,6 @@ class DamageState extends MySchema {
     this.chaos = new RangeValState(damage.chaos, room);
     this.speed = new NumValState(damage.speed, room);
     this.crtRate = new NumValState(damage.crtRate, room);
-
-    this.hookEvent(this.fire, this.cold, this.lightning, this.chaos, this.speed, this.crtRate);
-  }
-
-  onEventAfter(event: Event): void {
-    this.fire.onDispose();
-    this.cold.onDispose();
-    this.lightning.onDispose();
-    this.chaos.onDispose();
-    this.speed.onDispose();
-    this.crtRate.onDispose();
-
-    this.room.rebuildState(this);
   }
 }
 
@@ -60,12 +45,6 @@ export class AttDamageState extends DamageState {
     super(damage, room);
 
     this.physical = new RangeValState(damage.physical, room);
-  }
-
-  onEventAfter(event: Event): void {
-    this.physical.onDispose();
-
-    super.onEventAfter(event);
   }
 }
 
@@ -141,6 +120,28 @@ export class CharacterPanelRoomState extends MySchema {
     super(room);
 
     this.player = player;
+
+    this.level = new NumValState(player.level, room);
+    this.exp = new RangeValState(player.exp, room);
+    this.life = new RangeValState(player.resource.life, room);
+    this.mana = new RangeValState(player.resource.mana, room);
+    this.es = new RangeValState(player.resource.es, room);
+    this.str = new NumValState(player.core.str, room);
+    this.agi = new NumValState(player.core.agi, room);
+    this.int = new NumValState(player.core.int, room);
+    this.unallocated = new NumValState(player.core.unallocated, room);
+    this.accuracyRating = new NumValState(player.offence.accuracyRating, room);
+    this.crtDamage = new NumValState(player.offence.crtDamage, room);
+    this.attack = new AttDamageState(player.offence.attack, room);
+    this.spell = new SpellDamageState(player.offence.spell, room);
+    this.armour = new NumValState(player.defence.armour, room);
+    this.evasionRating = new NumValState(player.defence.evasionRating, room);
+    this.blockRate = new NumValState(player.defence.blockRate, room);
+    this.phyResistance = new NumValState(player.defence.resistance.physical, room);
+    this.fireResistance = new NumValState(player.defence.resistance.fire, room);
+    this.coldResistance = new NumValState(player.defence.resistance.cold, room);
+    this.lightningResistance = new NumValState(player.defence.resistance.lightning, room);
+    this.chaosResistance = new NumValState(player.defence.resistance.chaos, room);
   }
 
   onAction(entities: string, payload: any, onError: (errCode: string, message: string) => void): void {

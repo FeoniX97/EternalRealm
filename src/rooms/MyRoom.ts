@@ -1,11 +1,8 @@
 import { Room } from "@colyseus/core";
 import MySchema from "./MySchema";
-import { authenticateRoom } from "./util/utils";
 
 export default abstract class MyRoom<T extends MySchema> extends Room<T> {
   protected token: string;
-
-  abstract rebuildState(sender?: MySchema): void;
 
   onCreate(options: any): void | Promise<any> {
     this.onMessage("action", (client, message) => {

@@ -7,6 +7,7 @@ import { Action, ActionEvent } from "../../../thing/Thing";
 import Rarity from "../../../thing/Rarity";
 import Event from "../../../event/Event";
 import Equipment from "../../../thing/item/equipment/Equipment";
+import InventoryPanelRoom from "./InventoryPanelRoom";
 
 class ActionState extends MySchema {
   @type("string")
@@ -43,6 +44,8 @@ class RarityState extends MySchema {
 }
 
 export class ItemState extends MySchema {
+  room: MyRoom<InventoryPanelRoomState>;
+
   readonly item: Item;
 
   @type("string")
@@ -82,37 +85,41 @@ export class ItemState extends MySchema {
 
     this.item = item;
 
-    this.name = item.name;
-    this.itemLevel = item.itemLevel;
-    this.reqLevel = item.reqLevel;
-    this.type = item.type;
-    this.rarity = new RarityState(room, item.rarity);
-    this.customDesc.push(...item.getCustomDesc());
-    this.desc = item.desc;
+    this.rebuildState();
 
-    if (item instanceof Equipment) {
-      for (let basicAffix of item.basicAffixes) {
+    this.hookEvent(item);
+  }
+
+  rebuildState() {
+    this.name = this.item.name;
+    this.itemLevel = this.item.itemLevel;
+    this.reqLevel = this.item.reqLevel;
+    this.type = this.item.type;
+    this.rarity = new RarityState(this.room, this.item.rarity);
+    this.customDesc.push(...this.item.getCustomDesc());
+    this.desc = this.item.desc;
+
+    if (this.item instanceof Equipment) {
+      for (let basicAffix of this.item.basicAffixes) {
         this.basicAffixes.push(basicAffix.desc());
       }
 
-      for (let magicAffix of item.magicAffixes) {
+      for (let magicAffix of this.item.magicAffixes) {
         this.magicAffixes.push(magicAffix.desc());
       }
     }
 
-    for (let action of item.actions) {
-      this.actions.push(new ActionState(room, action));
+    for (let action of this.item.actions) {
+      this.actions.push(new ActionState(this.room, action));
     }
-
-    this.hookEvent(item);
   }
 
   onEventAfter(event: Event): void {
     super.onEventAfter(event);
 
-    // trigger room to rebuild state when action is executed
+    // trigger rebuild state when action is executed
     if (event.sender == this.item && event instanceof ActionEvent) {
-      this.room.rebuildState();
+      this.rebuildState();
     }
   }
 
@@ -123,6 +130,8 @@ export class ItemState extends MySchema {
 }
 
 export default class InventoryPanelRoomState extends MySchema {
+  room: MyRoom<InventoryPanelRoomState>;
+
   readonly inventory: Inventory;
 
   @type([ItemState])
@@ -133,7 +142,27 @@ export default class InventoryPanelRoomState extends MySchema {
 
     this.inventory = inventory;
 
+    this.rebuildState();
+
     this.hookEvent(inventory);
+  }
+
+  rebuildState() {
+    this.items.forEach((item) => item.onDispose());
+    this.items.clear();
+    this.items = new ArraySchema<ItemState>();
+
+    for (let item of this.inventory.items) {
+      this.items.push(new ItemState(this.room, item));
+    }
+  }
+
+  discardItem(item: Item) {
+    let itemState = this.items.find((i) => i.item === item);
+
+    if (itemState) {
+      this.items.deleteAt(this.items.indexOf(itemState));
+    }
   }
 
   onAction(entities: string, payload: any, onError: (errCode: string, message: string) => void): void {
@@ -145,7 +174,7 @@ export default class InventoryPanelRoomState extends MySchema {
 
     // listen to inventory discard event
     if (event instanceof InventoryDiscardEvent && event.sender == this.inventory) {
-      this.room.rebuildState();
+      this.discardItem(event.item);
     }
   }
 
