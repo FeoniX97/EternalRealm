@@ -1,10 +1,12 @@
 import Event from "../../event/Event";
 import Rarity from "../Rarity";
 import Thing, { Options } from "../Thing";
-import Character from "../living/character/Character";
 import Player from "../living/character/player/Player";
+import NumVal from "../value/NumVal";
+import StrVal from "../value/StrVal";
 
 export interface ItemOptions extends Options {
+  name: string;
   player?: Player;
   itemLevel?: number;
   reqLevel?: number;
@@ -16,38 +18,44 @@ export interface ItemOptions extends Options {
 export default abstract class Item extends Thing {
   readonly player?: Player;
 
+  /** the item name */
+  name: StrVal;
+
   /** the item level */
-  itemLevel: number;
+  itemLevel: NumVal;
 
   /** the required level to use the item */
-  reqLevel: number;
+  reqLevel: NumVal;
 
-  /** the item name */
-  name: string;
-
-  desc: string;
+  desc: StrVal;
 
   rarity: Rarity;
 
-  type: string;
+  type: StrVal;
 
-  constructor(name: string, parent: Thing, options?: ItemOptions) {
+  constructor(parent: Thing, options?: ItemOptions) {
     super(parent, options);
 
-    this.name = name;
-    this.player = options?.player;
-    this.itemLevel = options?.itemLevel ?? 1;
-    this.reqLevel = options?.reqLevel ?? 1;
-    this.desc = options?.desc ?? "这个作者很懒，什么都没写";
-    this.type = options?.type ?? "物品";
-    this.rarity = options?.rarity ?? Rarity.normal;
+    // this.name = name;
+    // this.player = options?.player;
+    // this.itemLevel = options?.itemLevel ?? 1;
+    // this.reqLevel = options?.reqLevel ?? 1;
+    // this.desc = options?.desc ?? "这个作者很懒，什么都没写";
+    // this.type = options?.type ?? "物品";
+    // this.rarity = options?.rarity ?? Rarity.normal;
   }
 
-  onCreated(): void {
-      super.onCreated();
+  protected onPopulated(options?: ItemOptions): void {
+    super.onPopulated(options);
 
-      this.hookEvent(this);
-      this.registerAction("use", this.onUse, { events: [new ItemUseEvent(this)], label: "使用" });
+    this.name = new StrVal(this, { value: "物品", entityID: "name", ...this.parseOptions(options) });
+    this.itemLevel = new NumVal(this, { entityID: "itemLevel", ...this.parseOptions(options) });
+    this.reqLevel = new NumVal(this, { entityID: "reqLevel", ...this.parseOptions(options) });
+    this.desc = new StrVal(this, { entityID: "desc", ...this.parseOptions(options) });
+    // this.rarity = new Rarity(this, {  })
+
+    this.hookEvent(this);
+    this.registerAction("use", this.onUse, { events: [new ItemUseEvent(this)], label: "使用" });
   }
 
   protected abstract onUse(payload: any): void;

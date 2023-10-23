@@ -1,4 +1,4 @@
-import Rarity from "../../Rarity";
+import Rarity from "../../Rarities";
 import Thing from "../../Thing";
 import Item, { ItemOptions } from "../Item";
 

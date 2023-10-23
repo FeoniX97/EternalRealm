@@ -1,4 +1,3 @@
-import { type } from "@colyseus/schema";
 import Event from "../../event/Event";
 import Value from "./Value";
 import Thing, { Options } from "../Thing";
@@ -15,7 +14,6 @@ export interface NumValOptions extends Options {
 export default class NumVal extends Value {
   base: number = null;
 
-  @type("number")
   private value: number;
 
   private increasePercentValue: number = null;
@@ -29,7 +27,7 @@ export default class NumVal extends Value {
   constructor(parent: Thing, options?: NumValOptions) {
     super(parent, options);
 
-    options = { ...options, ...this.parseOptions(options) };
+    options = this.parseOptions(options);
 
     this.base = options?.json?.base ? options?.json?.base : options?.base ? options?.base : 0;
     this.increasePercentValue = options?.json?.increasePercent ? options?.json?.increasePercent : options?.increasePercent ? options?.increasePercent : 0;

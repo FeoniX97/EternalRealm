@@ -257,8 +257,21 @@ export default abstract class Thing implements EventSender, EventListener {
   }
 
   /***************************** BEGIN Database ************************/
-  /** convert this thing into JSON which is used to store into DB */
-  toJSON() {
+  /** convert this thing into JSON which is used to store into DB
+   * @param reference whether only return the DB id of this Thing, only applicable for root Thing
+   */
+  toJSON(reference?: boolean) {
+    if (reference) {
+      if (!this.id) throw new Error("failed to convert toJSON with idOnly, the target Thing has no id!");
+      if (!this.collection) throw new Error("failed to convert toJSON with idOnly, the target Thing has no collection name!");
+      if (this.root !== this) throw new Error("failed to convert toJSON with idOnly, the target Thing is not the root!");
+
+      return {
+        id: this.id,
+        collection: this.collection,
+      };
+    }
+
     if (this.children.length <= 0) return null;
 
     let data: any = {};
@@ -307,14 +320,21 @@ export default abstract class Thing implements EventSender, EventListener {
     await db.collection(this.root.collection).updateOne({ _id: new ObjectId(this.root.id) }, { $set: this.root.toJSON() });
   }
 
-  /** parse and retrieve the common options given by parent (e.g. room clock, the JSON data from DB) */
+  /** parse the json data and remove some options that's exclusive to the root and parent */
   protected parseOptions(parentOptions?: Options): any {
-    if (!this.entityID) return { clock: parentOptions?.clock };
+    // remove options thats exclusive to the root
+    delete parentOptions["id"];
+    delete parentOptions["collection"];
+    delete parentOptions["isRoot"];
+    
+    // remove option thats exclusive to the parent
+    delete parentOptions["entityID"];
+
+    if (!this.entityID) return parentOptions;
 
     let data = parentOptions?.json?.[this.entityID];
 
-    if (data) return { json: data, clock: parentOptions?.clock };
-    else return { clock: parentOptions?.clock };
+    return { ...parentOptions, json: data };
   }
 
   /** the data is ready, implement this method to create children, hook events etc... */

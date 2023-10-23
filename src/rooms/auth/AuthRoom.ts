@@ -31,6 +31,8 @@ export class AuthRoom extends Room<AuthRoomState> {
 
     // create player character instance
     const playerInstance = new Player(null, { id: player.id, collection: "players", isRoot: true, clock: this.clock });
+    // const playerInstance = new Player(null, { isRoot: true, clock: this.clock });
+    // console.log(JSON.stringify(playerInstance.toJSON()));
 
     // define rooms for the player
     server.define("character_panel_room_" + token, CharacterPanelRoom, {

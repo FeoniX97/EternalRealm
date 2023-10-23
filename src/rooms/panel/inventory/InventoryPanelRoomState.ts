@@ -4,7 +4,7 @@ import MyRoom from "../../MyRoom";
 import MySchema from "../../MySchema";
 import Item from "../../../thing/item/Item";
 import { Action, ActionEvent } from "../../../thing/Thing";
-import Rarity from "../../../thing/Rarity";
+import Rarity from "../../../thing/Rarities";
 import Event from "../../../event/Event";
 import Equipment from "../../../thing/item/equipment/Equipment";
 import InventoryPanelRoom from "./InventoryPanelRoom";

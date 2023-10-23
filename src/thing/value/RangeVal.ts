@@ -19,9 +19,10 @@ export default class RangeVal extends Value {
   protected onPopulated(options?: RangeValOptions): void {
     super.onPopulated(options);
 
-    let min = options?.json?.min ? options?.json?.min : options?.min ? options?.min : 0;
-    this.min = new NumVal(this, { ...options, base: min });
-    this.max = new NumVal(this, { ...options, base: options?.json?.max ? options?.json?.max : options?.max ? options?.max : min });
+    let min = options?.min ? options?.min : 0;
+    let max = options?.max ? options?.max : min;
+    this.min = new NumVal(this, { base: min, entityID: "min", ...this.parseOptions(options) });
+    this.max = new NumVal(this, { base: max, entityID: "max", ...this.parseOptions(options) });
 
     this.hookEvent(this.min, this.max);
   }
