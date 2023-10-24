@@ -6,7 +6,7 @@ import NumVal from "../value/NumVal";
 import StrVal from "../value/StrVal";
 
 export interface ItemOptions extends Options {
-  name: string;
+  name?: string;
   player?: Player;
   itemLevel?: number;
   reqLevel?: number;
@@ -35,24 +35,17 @@ export default abstract class Item extends Thing {
 
   constructor(parent: Thing, options?: ItemOptions) {
     super(parent, options);
-
-    // this.name = name;
-    // this.player = options?.player;
-    // this.itemLevel = options?.itemLevel ?? 1;
-    // this.reqLevel = options?.reqLevel ?? 1;
-    // this.desc = options?.desc ?? "这个作者很懒，什么都没写";
-    // this.type = options?.type ?? "物品";
-    // this.rarity = options?.rarity ?? Rarity.normal;
   }
 
   protected onPopulated(options?: ItemOptions): void {
     super.onPopulated(options);
 
     this.name = new StrVal(this, { value: "物品", entityID: "name", ...this.parseOptions(options) });
-    this.itemLevel = new NumVal(this, { entityID: "itemLevel", ...this.parseOptions(options) });
-    this.reqLevel = new NumVal(this, { entityID: "reqLevel", ...this.parseOptions(options) });
+    this.itemLevel = new NumVal(this, { base: 1, entityID: "itemLevel", ...this.parseOptions(options) });
+    this.reqLevel = new NumVal(this, { base: 1, entityID: "reqLevel", ...this.parseOptions(options) });
     this.desc = new StrVal(this, { entityID: "desc", ...this.parseOptions(options) });
-    // this.rarity = new Rarity(this, {  })
+    this.rarity = new Rarity(this, { type: Rarity.Normal, entityID: "rarity", ...this.parseOptions(options) });
+    this.type = new StrVal(this, { entityID: "type", ...this.parseOptions(options) });
 
     this.hookEvent(this);
     this.registerAction("use", this.onUse, { events: [new ItemUseEvent(this)], label: "使用" });
@@ -70,7 +63,7 @@ export default abstract class Item extends Thing {
 
     // ensure player level meets requirement
     if (event.sender == this && event instanceof ItemUseEvent) {
-      if (this.player.level.base < this.reqLevel) {
+      if (this.player.level.base < this.reqLevel.base) {
         event.blocked = true;
         event.errMessage = "level req not met to use item: " + this.name;
       }

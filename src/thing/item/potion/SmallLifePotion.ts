@@ -3,7 +3,7 @@ import Potion, { PotionOptions } from "./Potion";
 
 export default class SmallLifePotion extends Potion {
   constructor(parent: Thing, options?: PotionOptions) {
-    super("小型生命药水", parent, { ...options, desc: "使用后可恢复50点生命值" });
+    super(parent, { name: "小型生命药水", desc: "使用后可恢复50点生命值", ...options });
   }
 
   protected onUse({ self }: { self: SmallLifePotion }): void {

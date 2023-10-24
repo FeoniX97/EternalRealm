@@ -1,6 +1,6 @@
 import Event from "../../../event/Event";
 import Player from "../../living/character/player/Player";
-import Item from "../Item";
+import Item, { ItemOptions } from "../Item";
 import Affix from "./affix/Affix";
 
 export default abstract class Equipment extends Item {
@@ -14,8 +14,8 @@ export default abstract class Equipment extends Item {
   /** the magic affix section */
   readonly magicAffixes: Affix[] = [];
 
-  onCreated(): void {
-    super.onCreated();
+  protected onPopulated(options?: ItemOptions): void {
+    super.onPopulated(options);
 
     this.updateAction("use", "穿戴");
     this.addActionEvent("use", new EquipEvent(this));

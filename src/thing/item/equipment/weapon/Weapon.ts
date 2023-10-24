@@ -2,6 +2,7 @@ import Event from "../../../../event/Event";
 import { fromPercent } from "../../../../utils/utils";
 import NumVal from "../../../value/NumVal";
 import RangeVal from "../../../value/RangeVal";
+import { ItemOptions } from "../../Item";
 import Equipment, { EquipEvent, UnEquipEvent } from "../Equipment";
 
 export interface OneHanded {
@@ -54,10 +55,10 @@ export default abstract class Weapon extends Equipment {
     return "isCasterWeapon" in obj;
   }
 
-  onCreated(): void {
-    super.onCreated();
+  protected onPopulated(options?: ItemOptions): void {
+    super.onPopulated(options);
 
-    this.phyDamage = new RangeVal(this);
+    this.phyDamage = new RangeVal(this, { entityID: "phyDamage", ...this.parseOptions(options) });
     this.fireDamage = new RangeVal(this);
     this.coldDamage = new RangeVal(this);
     this.lightningDamage = new RangeVal(this);

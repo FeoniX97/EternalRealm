@@ -326,9 +326,17 @@ export default abstract class Thing implements EventSender, EventListener {
     delete parentOptions["id"];
     delete parentOptions["collection"];
     delete parentOptions["isRoot"];
-    
+
     // remove option thats exclusive to the parent
     delete parentOptions["entityID"];
+
+    // remove options that is null or undefined
+    let o: keyof typeof parentOptions;
+    for (o in parentOptions) {
+      if (parentOptions[o] === null || parentOptions[o] === undefined) {
+        delete parentOptions[o];
+      }
+    }
 
     if (!this.entityID) return parentOptions;
 

@@ -10,10 +10,14 @@ export interface PotionOptions extends ItemOptions {
 export default abstract class Potion extends Item {
   charges: RangeVal;
 
-  constructor(name: string, parent: Thing, options?: PotionOptions) {
-    super(name, parent, { ...options, type: "药水" });
+  constructor(parent: Thing, options?: PotionOptions) {
+    super(parent, options);
+  }
 
-    this.charges = new RangeVal(this, 5);
+  protected onPopulated(options?: PotionOptions): void {
+    super.onPopulated({ type: "药水", ...options });
+
+    this.charges = new RangeVal(this, { min: 5, entityID: "charges", ...this.parseOptions(options) });
   }
 
   getCustomDesc(): string[] {
