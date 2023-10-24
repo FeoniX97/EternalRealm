@@ -15,10 +15,10 @@ export default class Core extends Thing {
   protected onPopulated(options?: Options): void {
     super.onPopulated(options);
 
-    this.str = new NumVal(this, { base: 1, entityID: "str", ...this.parseOptions(options) });
-    this.agi = new NumVal(this, { base: 1, entityID: "agi", ...this.parseOptions(options) });
-    this.int = new NumVal(this, { base: 1, entityID: "int", ...this.parseOptions(options) });
-    this.unallocated = new NumVal(this, { base: 5, entityID: "unallocated", ...this.parseOptions(options) });
+    this.str = new NumVal(this, { base: 1, entityID: "str", ...options });
+    this.agi = new NumVal(this, { base: 1, entityID: "agi", ...options });
+    this.int = new NumVal(this, { base: 1, entityID: "int", ...options });
+    this.unallocated = new NumVal(this, { base: 5, entityID: "unallocated", ...options });
   }
 
   onEventAfter(event: Event): void {

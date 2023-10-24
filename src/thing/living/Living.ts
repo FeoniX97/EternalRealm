@@ -15,10 +15,14 @@ export default abstract class Living extends Thing {
   protected onPopulated(options?: Options): void {
     super.onPopulated(options);
 
-    this.level = new NumVal(this, { base: 1, entityID: "level", ...this.parseOptions(options) });
-    this.resource = new Resource(this, { entityID: "resource", ...this.parseOptions(options) });
-    this.core = new Core(this, { entityID: "core", ...this.parseOptions(options) });
-    this.offence = new Offence(this, { entityID: "offence", ...this.parseOptions(options) });
-    this.defence = new Defence(this, { entityID: "defence", ...this.parseOptions(options) });
+    this.level = new NumVal(this, { base: 1, entityID: "level", ...options });
+    // console.log(this.level.id);
+    // console.log(this.level.collection);
+    // console.log(this.level.root.constructor.name);
+    // console.log(this.level.base);
+    this.resource = new Resource(this, { entityID: "resource", ...options });
+    this.core = new Core(this, { entityID: "core", ...options });
+    this.offence = new Offence(this, { entityID: "offence", ...options });
+    this.defence = new Defence(this, { entityID: "defence", ...options });
   }
 }

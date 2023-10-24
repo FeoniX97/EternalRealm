@@ -17,7 +17,7 @@ export default abstract class Potion extends Item {
   protected onPopulated(options?: PotionOptions): void {
     super.onPopulated({ type: "药水", ...options });
 
-    this.charges = new RangeVal(this, { min: 5, entityID: "charges", ...this.parseOptions(options) });
+    this.charges = new RangeVal(this, { min: 5, entityID: "charges", ...options });
   }
 
   getCustomDesc(): string[] {

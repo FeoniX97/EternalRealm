@@ -1,5 +1,5 @@
 import Event from "../../../../event/Event";
-import Thing from "../../../Thing";
+import Thing, { Options } from "../../../Thing";
 import Item from "../../../item/Item";
 import Equipment, { EquipEvent, UnEquipEvent } from "../../../item/equipment/Equipment";
 import Affix_0 from "../../../item/equipment/affix/final/Affix_0";
@@ -15,6 +15,7 @@ import Weapon from "../../../item/equipment/weapon/Weapon";
 import Staff_0 from "../../../item/equipment/weapon/staff/final/Staff_0";
 import Item_0 from "../../../item/final/Item_0";
 import SmallLifePotion from "../../../item/potion/SmallLifePotion";
+import ArrVal from "../../../value/ArrVal";
 import Player from "./Player";
 
 class Equipped extends Thing {
@@ -96,24 +97,38 @@ class Equipped extends Thing {
 }
 
 export default class Inventory extends Thing {
-  items: Item[] = [];
-  equipped = new Equipped(this);
+  parent: Player;
 
-  constructor(parent: Player) {
-    super(parent);
+  items: ArrVal<Item>;
+  // equipped = new Equipped(this);
 
-    const potion = new SmallLifePotion(this, { player: parent });
-    potion.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, potion)] });
-    this.items.push(potion);
+  protected onPopulated(options?: Options): void {
+    super.onPopulated(options);
 
-    const staff = new Staff_0(this, { player: parent });
-    staff.attachMagicAffix(new Affix_0(staff));
-    staff.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, staff)] });
-    this.items.push(staff);
+    // const potion = new SmallLifePotion(this, { player: parent });
+    // potion.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, potion)] });
+    // this.items.push(potion);
 
-    const surprise = new Item_0(this, { player: parent });
-    surprise.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, surprise)] });
-    this.items.push(surprise);
+    // const staff = new Staff_0(this, { player: parent });
+    // staff.attachMagicAffix(new Affix_0(staff));
+    // staff.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, staff)] });
+    // this.items.push(staff);
+
+    this.items = new ArrVal(this, {
+      entityID: "items",
+      populate: {
+        onPopulate: (arrVal, index) => {
+          return new Item_0(arrVal, {
+            entityID: index.toString(),
+            player: this.parent,
+            onPopulated: (self, options) => {
+              self.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, self as Item)] });
+            },
+          });
+        },
+      },
+      ...options,
+    });
   }
 
   /** Player.Inventory { action: 'use', index: 0 }\
@@ -127,9 +142,19 @@ export default class Inventory extends Thing {
 
     const actionID = payload.action;
     const itemIdx = payload.index;
-    const item = this.items[itemIdx];
+    const item = this.items.get(itemIdx);
 
     item.executeAction(actionID, payload, onError);
+  }
+
+  addItem(item: Item) {
+    if (this.items.children.indexOf(item) > -1) return;
+
+    item.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, item)] });
+    
+    // this.items.push(item);
+
+    this.root.saveToDB();
   }
 
   /** Player.Inventory { action: 'discard', index: 0 } */
@@ -138,22 +163,23 @@ export default class Inventory extends Thing {
 
     this.unhookEvent(item);
     item.onDestroy();
-    this.items = this.items.filter((_item) => _item != item);
+
+    // this.items = this.items.filter((_item) => _item != item);
   };
 
-  onEventBefore(event: Event): boolean {
-    if (super.onEventBefore(event)) return true;
+  // onEventBefore(event: Event): boolean {
+  //   if (super.onEventBefore(event)) return true;
 
-    if (event instanceof EquipEvent) {
-      // equip the equipment
-      console.log("equipping equipment ...");
-      this.equipped.equip(event.sender);
-    } else if (event instanceof UnEquipEvent) {
-      // unequip the equipment
-      console.log("unequipping equipment ...");
-      this.equipped.unequip(event.sender);
-    }
-  }
+  //   if (event instanceof EquipEvent) {
+  //     // equip the equipment
+  //     console.log("equipping equipment ...");
+  //     this.equipped.equip(event.sender);
+  //   } else if (event instanceof UnEquipEvent) {
+  //     // unequip the equipment
+  //     console.log("unequipping equipment ...");
+  //     this.equipped.unequip(event.sender);
+  //   }
+  // }
 }
 
 export class InventoryDiscardEvent extends Event {

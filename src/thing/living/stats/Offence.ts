@@ -14,12 +14,12 @@ export abstract class Damage extends Thing {
   protected onPopulated(options?: Options): void {
     super.onPopulated(options);
 
-    this.fire = new RangeVal(this, { entityID: "fire", ...this.parseOptions(options) });
-    this.cold = new RangeVal(this, { entityID: "cold", ...this.parseOptions(options) });
-    this.lightning = new RangeVal(this, { entityID: "lightning", ...this.parseOptions(options) });
-    this.chaos = new RangeVal(this, { entityID: "chaos", ...this.parseOptions(options) });
-    this.speed = new NumVal(this, { entityID: "speed", ...this.parseOptions(options) });
-    this.crtRate = new NumVal(this, { entityID: "crtRate", ...this.parseOptions(options) });
+    this.fire = new RangeVal(this, { entityID: "fire", ...options });
+    this.cold = new RangeVal(this, { entityID: "cold", ...options });
+    this.lightning = new RangeVal(this, { entityID: "lightning", ...options });
+    this.chaos = new RangeVal(this, { entityID: "chaos", ...options });
+    this.speed = new NumVal(this, { entityID: "speed", ...options });
+    this.crtRate = new NumVal(this, { entityID: "crtRate", ...options });
   }
 }
 
@@ -29,7 +29,7 @@ export class Attack extends Damage {
   protected onPopulated(options?: Options): void {
     super.onPopulated(options);
 
-    this.physical = new RangeVal(this, { min: 1, entityID: "physical", ...this.parseOptions(options) });
+    this.physical = new RangeVal(this, { min: 1, entityID: "physical", ...options });
   }
 }
 
@@ -44,9 +44,9 @@ export default class Offence extends Thing {
   protected onPopulated(options?: Options): void {
     super.onPopulated(options);
 
-    this.attack = new Attack(this, { entityID: "attack", ...this.parseOptions(options) });
-    this.spell = new Spell(this, { entityID: "spell", ...this.parseOptions(options) });
-    this.accuracyRating = new NumVal(this, { base: 100, entityID: "accuracyRating", ...this.parseOptions(options) });
-    this.crtDamage = new NumVal(this, { base: fromPercent(100), entityID: "crtDamage", ...this.parseOptions(options) });
+    this.attack = new Attack(this, { entityID: "attack", ...options });
+    this.spell = new Spell(this, { entityID: "spell", ...options });
+    this.accuracyRating = new NumVal(this, { base: 100, entityID: "accuracyRating", ...options });
+    this.crtDamage = new NumVal(this, { base: fromPercent(100), entityID: "crtDamage", ...options });
   }
 }

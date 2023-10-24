@@ -9,7 +9,7 @@ export default class Character extends Living {
   constructor(parent?: Thing, options?: Options) {
     super(parent, options);
 
-    this.exp = new RangeVal(this, { max: 100, entityID: "exp", ...this.parseOptions(options) });
+    this.exp = new RangeVal(this, { max: 100, entityID: "exp", ...options });
   }
 
   onEventAfter(event: Event): void {

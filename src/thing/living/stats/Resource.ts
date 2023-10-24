@@ -68,8 +68,8 @@ export default class Resource extends Thing {
   protected onPopulated(options?: Options): void {
     super.onPopulated(options);
 
-    this.life = new ResourceVal(this, { entityID: "life", ...this.parseOptions(options) });
-    this.mana = new ResourceVal(this, { entityID: "mana", ...this.parseOptions(options) });
-    this.es = new ESResourceVal(this, { entityID: "es", ...this.parseOptions(options) });
+    this.life = new ResourceVal(this, { entityID: "life", ...options });
+    this.mana = new ResourceVal(this, { entityID: "mana", ...options });
+    this.es = new ESResourceVal(this, { entityID: "es", ...options });
   }
 }

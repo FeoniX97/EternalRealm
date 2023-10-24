@@ -58,7 +58,7 @@ export default abstract class Weapon extends Equipment {
   protected onPopulated(options?: ItemOptions): void {
     super.onPopulated(options);
 
-    this.phyDamage = new RangeVal(this, { entityID: "phyDamage", ...this.parseOptions(options) });
+    this.phyDamage = new RangeVal(this, { entityID: "phyDamage", ...options });
     this.fireDamage = new RangeVal(this);
     this.coldDamage = new RangeVal(this);
     this.lightningDamage = new RangeVal(this);

@@ -1,6 +1,6 @@
 import Thing, { Options } from "./Thing";
 
-class RarityType {
+export class RarityType {
   name: string;
   value: number;
 
@@ -11,7 +11,7 @@ class RarityType {
 }
 
 interface RarityOptions extends Options {
-  type: RarityType;
+  rarityType: RarityType;
 }
 
 export default class Rarity extends Thing {
@@ -31,8 +31,8 @@ export default class Rarity extends Thing {
   protected onPopulated(options?: RarityOptions): void {
     super.onPopulated(options);
 
-    this.name = options?.json?.name ? options?.json?.name : options?.type?.name ? options?.type?.name : "普通";
-    this.value = options?.json?.value ? options?.json?.value : options?.type?.value ? options?.type?.value : 0;
+    this.name = options?.json?.name ? options?.json?.name : options?.rarityType?.name ? options?.rarityType?.name : "普通";
+    this.value = options?.json?.value ? options?.json?.value : options?.rarityType?.value ? options?.rarityType?.value : 0;
   }
 
   toJSON(reference?: boolean) {

@@ -10,14 +10,16 @@ export default class StrVal extends Value {
 
   constructor(parent: Thing, options?: StrValOptions) {
     super(parent, options);
+  }
 
-    options = this.parseOptions(options);
+  protected onPopulated(options?: StrValOptions): void {
+    super.onPopulated(options);
 
     this.value = options?.json?.value ? options?.json?.value : options?.value ? options?.value : "";
   }
 
-  val(newVal: string) {
-    this.value = newVal;
+  val(newVal?: string) {
+    if (newVal) this.value = newVal;
 
     return this.value;
   }
@@ -26,5 +28,17 @@ export default class StrVal extends Value {
     return {
       value: this.value,
     };
+  }
+
+  protected parseOptions(parentOptions?: StrValOptions) {
+    let options = super.parseOptions(parentOptions);
+
+    // convert field: [entityID] -> value
+    if (this.entityID in options && options[this.entityID]) {
+      options["value"] = options[this.entityID];
+      delete options[this.entityID];
+    }
+
+    return options;
   }
 }

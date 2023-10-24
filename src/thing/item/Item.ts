@@ -1,5 +1,5 @@
 import Event from "../../event/Event";
-import Rarity from "../Rarity";
+import Rarity, { RarityType } from "../Rarity";
 import Thing, { Options } from "../Thing";
 import Player from "../living/character/player/Player";
 import NumVal from "../value/NumVal";
@@ -10,7 +10,7 @@ export interface ItemOptions extends Options {
   player?: Player;
   itemLevel?: number;
   reqLevel?: number;
-  rarity?: Rarity;
+  rarity?: RarityType;
   desc?: string;
   type?: string;
 }
@@ -34,18 +34,18 @@ export default abstract class Item extends Thing {
   type: StrVal;
 
   constructor(parent: Thing, options?: ItemOptions) {
-    super(parent, options);
+    super(parent, { ...options, collection: "items" });
   }
 
   protected onPopulated(options?: ItemOptions): void {
     super.onPopulated(options);
 
-    this.name = new StrVal(this, { value: "物品", entityID: "name", ...this.parseOptions(options) });
-    this.itemLevel = new NumVal(this, { base: 1, entityID: "itemLevel", ...this.parseOptions(options) });
-    this.reqLevel = new NumVal(this, { base: 1, entityID: "reqLevel", ...this.parseOptions(options) });
-    this.desc = new StrVal(this, { entityID: "desc", ...this.parseOptions(options) });
-    this.rarity = new Rarity(this, { type: Rarity.Normal, entityID: "rarity", ...this.parseOptions(options) });
-    this.type = new StrVal(this, { entityID: "type", ...this.parseOptions(options) });
+    this.name = new StrVal(this, { value: "物品", entityID: "name", ...options });
+    this.itemLevel = new NumVal(this, { base: 1, entityID: "itemLevel", ...options });
+    this.reqLevel = new NumVal(this, { base: 1, entityID: "reqLevel", ...options });
+    this.desc = new StrVal(this, { value: "这个作者很懒，什么都没写", entityID: "desc", ...options });
+    this.rarity = new Rarity(this, { rarityType: Rarity.Normal, entityID: "rarity", ...options });
+    this.type = new StrVal(this, { entityID: "type", ...options });
 
     this.hookEvent(this);
     this.registerAction("use", this.onUse, { events: [new ItemUseEvent(this)], label: "使用" });

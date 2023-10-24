@@ -21,8 +21,8 @@ export default class RangeVal extends Value {
 
     let min = options?.min ? options?.min : 0;
     let max = options?.max ? options?.max : min;
-    this.min = new NumVal(this, { base: min, entityID: "min", ...this.parseOptions(options) });
-    this.max = new NumVal(this, { base: max, entityID: "max", ...this.parseOptions(options) });
+    this.min = new NumVal(this, { base: min, entityID: "min", ...options });
+    this.max = new NumVal(this, { base: max, entityID: "max", ...options });
 
     this.hookEvent(this.min, this.max);
   }

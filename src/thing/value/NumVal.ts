@@ -12,22 +12,24 @@ export interface NumValOptions extends Options {
 }
 
 export default class NumVal extends Value {
-  base: number = null;
+  base: number;
 
   private value: number;
 
-  private increasePercentValue: number = null;
-  private incrementPercentValue: number = null;
+  private increasePercentValue: number;
+  private incrementPercentValue: number;
 
-  private isPositive: boolean = null;
-  private isInteger: boolean = null;
+  private isPositive: boolean;
+  private isInteger: boolean;
 
-  limit: number = null;
+  limit: number;
 
   constructor(parent: Thing, options?: NumValOptions) {
     super(parent, options);
+  }
 
-    options = this.parseOptions(options);
+  protected onPopulated(options?: NumValOptions): void {
+    super.onPopulated(options);
 
     this.base = options?.json?.base ? options?.json?.base : options?.base ? options?.base : 0;
     this.increasePercentValue = options?.json?.increasePercent ? options?.json?.increasePercent : options?.increasePercent ? options?.increasePercent : 0;
@@ -167,6 +169,18 @@ export default class NumVal extends Value {
       increasePercent: this.increasePercentValue,
       incrementPercent: this.incrementPercentValue,
     };
+  }
+
+  protected parseOptions(parentOptions?: NumValOptions) {
+    let options = super.parseOptions(parentOptions);
+
+    // convert field: [entityID] -> base
+    if (this.entityID in options && options[this.entityID]) {
+      options["base"] = options[this.entityID];
+      delete options[this.entityID];
+    }
+
+    return options;
   }
 }
 

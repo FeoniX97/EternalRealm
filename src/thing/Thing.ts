@@ -14,10 +14,12 @@ export interface Options {
   json?: any;
   /** the `collection` name of this Thing in the DB, `id` also need to set for persistance storage */
   collection?: string;
+  /** the class name of this Thing to populate from DB */
+  className?: string;
   /** the `id` of this Thing in the DB, `collection` name also need to set for persistance storage  */
   id?: string;
-  /** is this Thing the root of the Thing tree? (Is it the most top ancestor?) */
-  isRoot?: boolean;
+  /** the callback to listen when the Thing is populated finish */
+  onPopulated?: (self: Thing, options?: Options) => void;
 }
 
 export interface ActionOptions {
@@ -85,6 +87,7 @@ export default abstract class Thing implements EventSender, EventListener {
 
   /** the most top ancestor Thing, normally refer to the top document for DB */
   readonly root: Thing;
+
   readonly parent: Thing;
   readonly children: Array<Thing> = [];
 
@@ -97,22 +100,33 @@ export default abstract class Thing implements EventSender, EventListener {
   /** the `id` of this Thing in the DB, `collection` name also need to set for persistance storage  */
   id?: string;
 
-  /** the `collection` name of this Thing in the DB, `id` also need to set for persistance storage */
-  collection?: string;
+  /** the `collection` name of this Thing in the DB, `id` also need to set for persistance storage\
+   * a Thing with `collection` is automatically consider as the root, a root can be embedded in another root (e.g. Item in Player's Inventory)
+   */
+  readonly collection?: string;
+
+  /** the class name of this Thing to populate from DB */
+  readonly className?: string;
 
   /** the list of actions executable by client */
   readonly actions: Action[] = [];
 
+  /** the callback to listen when the Thing is populated finish */
+  onPopulatedCallback?: (self: Thing, options?: Options) => void;
+
   constructor(parent: Thing, options?: Options) {
-    if (parent?.root) this.root = parent?.root;
-    else this.root = options?.isRoot ? this : null;
+    if (parent) {
+      if (parent.collection) this.root = parent;
+      else this.root = parent.root;
+    }
 
     this.parent = parent;
 
-    // id and collection only for roots
-    if (options?.isRoot) {
+    // considered as a root Thing if having a collection name
+    if (options?.collection) {
       this.id = options?.id;
       this.collection = options?.collection;
+      this.className = options?.className ?? this.constructor.name;
     }
 
     this.entityID = options?.entityID;
@@ -121,7 +135,8 @@ export default abstract class Thing implements EventSender, EventListener {
     this.parent?.children.push(this);
     this.parent?.hookEvent(this);
 
-    this.populateFromDB(options);
+    this.onPopulatedCallback = options?.onPopulated;
+    this.populateFromDB(this.parseOptions(options));
   }
 
   /***************************** BEGIN Events ************************/
@@ -252,23 +267,24 @@ export default abstract class Thing implements EventSender, EventListener {
   }
 
   /** unhook all listeners here */
-  protected onDestroy() {
+  onDestroy() {
     this.children.forEach((child) => child.onDestroy());
   }
 
   /***************************** BEGIN Database ************************/
   /** convert this thing into JSON which is used to store into DB
-   * @param reference whether only return the DB id of this Thing, only applicable for root Thing
+   * @param full whether to force return the full json data instead of reference
    */
-  toJSON(reference?: boolean) {
-    if (reference) {
-      if (!this.id) throw new Error("failed to convert toJSON with idOnly, the target Thing has no id!");
-      if (!this.collection) throw new Error("failed to convert toJSON with idOnly, the target Thing has no collection name!");
-      if (this.root !== this) throw new Error("failed to convert toJSON with idOnly, the target Thing is not the root!");
+  toJSON(full = false) {
+    // convert to a reference JSON if this Thing has another root and collection
+    if (!full && this.root && this.root !== this && this.collection) {
+      if (!this.id) throw new Error("failed to convert to JSON with reference, the target Thing has no id!");
+      if (!this.collection) throw new Error("failed to convert to JSON with reference, the target Thing has no collection name!");
 
       return {
         id: this.id,
         collection: this.collection,
+        className: this.className,
       };
     }
 
@@ -290,6 +306,7 @@ export default abstract class Thing implements EventSender, EventListener {
     // return the options directly if no persistance
     if (!this.collection) {
       this.onPopulated(options);
+      this.onPopulatedCallback?.(this, options);
       return;
     }
 
@@ -299,25 +316,29 @@ export default abstract class Thing implements EventSender, EventListener {
     }
 
     this.onPopulated(options);
+    this.onPopulatedCallback?.(this, options);
 
     // create a new object in DB if id is not provided
     if (!this.id) await this.saveToDB();
   }
 
-  /** save the root object to DB */
-  protected async saveToDB() {
-    if (!this.root) throw new Error("failed to save to DB, no root is specified");
-    if (!this.root.collection) return;
+  /** save the root object to DB, can only be called from the root */
+  async saveToDB() {
+    if (!this.collection) return;
 
     // create a new object in DB if id is not provided
-    if (!this.root.id) {
-      const result = await db.collection(this.root.collection).insertOne(this.root.toJSON());
-      this.root.id = result.insertedId.toString();
+    if (!this.id) {
+      const result = await db.collection(this.collection).insertOne(this.toJSON(true));
+      this.id = result.insertedId.toString();
+      // inform the root to update self reference in the root with the new ID
+      if (this.root) {
+        await this.root.saveToDB();
+      }
       return;
     }
 
     // update the object in DB
-    await db.collection(this.root.collection).updateOne({ _id: new ObjectId(this.root.id) }, { $set: this.root.toJSON() });
+    await db.collection(this.collection).updateOne({ _id: new ObjectId(this.id) }, { $set: this.toJSON(true) });
   }
 
   /** parse the json data and remove some options that's exclusive to the root and parent */
@@ -325,10 +346,11 @@ export default abstract class Thing implements EventSender, EventListener {
     // remove options thats exclusive to the root
     delete parentOptions["id"];
     delete parentOptions["collection"];
-    delete parentOptions["isRoot"];
+    delete parentOptions["className"];
 
     // remove option thats exclusive to the parent
     delete parentOptions["entityID"];
+    delete parentOptions["onPopulated"];
 
     // remove options that is null or undefined
     let o: keyof typeof parentOptions;
