@@ -30,24 +30,23 @@ export class AuthRoom extends Room<AuthRoomState> {
     const token = player.id + client.sessionId;
 
     // create player character instance
-    const playerInstance = new Player(null, { id: player.id, clock: this.clock });
-    // const playerInstance = new Player(null, { isRoot: true, clock: this.clock });
+    const playerInstance = new Player(null, { id: player.id, clock: this.clock, onPopulated(self, options) {
+        // define rooms for the player
+      server.define("character_panel_room_" + token, CharacterPanelRoom, {
+        token,
+        player: playerInstance,
+      });
 
-    // define rooms for the player
-    server.define("character_panel_room_" + token, CharacterPanelRoom, {
-      token,
-      player: playerInstance,
-    });
+      server.define("inventory_panel_room_" + token, InventoryPanelRoom, {
+        token,
+        inventory: playerInstance.inventory,
+      });
 
-    // server.define("inventory_panel_room_" + token, InventoryPanelRoom, {
-    //   token,
-    //   inventory: playerInstance.inventory,
-    // });
-
-    server.define("resource_gui_room_" + token, ResourceGUIRoom, {
-      token,
-      player: playerInstance,
-    });
+      server.define("resource_gui_room_" + token, ResourceGUIRoom, {
+        token,
+        player: playerInstance,
+      });
+    }, });
 
     // send the token back to client
     client.send("token", token);

@@ -1,4 +1,5 @@
 import Event from "../../../../event/Event";
+import { Log } from "../../../../utils/utils";
 import Thing, { Options } from "../../../Thing";
 import Item from "../../../item/Item";
 import Equipment, { EquipEvent, UnEquipEvent } from "../../../item/equipment/Equipment";
@@ -105,30 +106,29 @@ export default class Inventory extends Thing {
   protected onPopulated(options?: Options): void {
     super.onPopulated(options);
 
-    // const potion = new SmallLifePotion(this, { player: parent });
-    // potion.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, potion)] });
-    // this.items.push(potion);
-
-    // const staff = new Staff_0(this, { player: parent });
-    // staff.attachMagicAffix(new Affix_0(staff));
-    // staff.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, staff)] });
-    // this.items.push(staff);
-
     this.items = new ArrVal(this, {
       entityID: "items",
       populate: {
-        onPopulate: (arrVal, index) => {
-          return new Item_0(arrVal, {
-            entityID: index.toString(),
-            player: this.parent,
-            onPopulated: (self, options) => {
-              self.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, self as Item)] });
-            },
-          });
+        // we dont populate default Things, so no need 'onPopulate'
+        // onPopulate: (arrVal, options) => {
+        //   return new Item_0(arrVal, {
+        //     player: this.parent,
+        //     ...options,
+        //   });
+        // },
+        onPopulated: (arrVal, thing, options) => {
+          thing.player = this.parent;
+          thing.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, thing)] });
         },
       },
       ...options,
     });
+
+    // new SmallLifePotion(this.items, { player: this.parent });
+
+    // const staff = new Staff_0(this, { player: parent });
+    // staff.attachMagicAffix(new Affix_0(staff));
+    // staff.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, staff)] });
   }
 
   /** Player.Inventory { action: 'use', index: 0 }\
@@ -151,8 +151,9 @@ export default class Inventory extends Thing {
     if (this.items.children.indexOf(item) > -1) return;
 
     item.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, item)] });
-    
-    // this.items.push(item);
+
+    this.items.add(() => item)
+    //this.items.push(item);
 
     this.root.saveToDB();
   }

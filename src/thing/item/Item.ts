@@ -1,4 +1,5 @@
 import Event from "../../event/Event";
+import { Log } from "../../utils/utils";
 import Rarity, { RarityType } from "../Rarity";
 import Thing, { Options } from "../Thing";
 import Player from "../living/character/player/Player";
@@ -16,7 +17,7 @@ export interface ItemOptions extends Options {
 }
 
 export default abstract class Item extends Thing {
-  readonly player?: Player;
+  player?: Player;
 
   /** the item name */
   name: StrVal;
@@ -48,6 +49,7 @@ export default abstract class Item extends Thing {
     this.type = new StrVal(this, { entityID: "type", ...options });
 
     this.hookEvent(this);
+
     this.registerAction("use", this.onUse, { events: [new ItemUseEvent(this)], label: "使用" });
   }
 

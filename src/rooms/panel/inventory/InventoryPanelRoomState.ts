@@ -4,10 +4,11 @@ import MyRoom from "../../MyRoom";
 import MySchema from "../../MySchema";
 import Item from "../../../thing/item/Item";
 import { Action, ActionEvent } from "../../../thing/Thing";
-import Rarity from "../../../thing/Rarities";
 import Event from "../../../event/Event";
 import Equipment from "../../../thing/item/equipment/Equipment";
 import InventoryPanelRoom from "./InventoryPanelRoom";
+import Rarity from "../../../thing/Rarity";
+import { Log } from "../../../utils/utils";
 
 class ActionState extends MySchema {
   @type("string")
@@ -91,24 +92,27 @@ export class ItemState extends MySchema {
   }
 
   rebuildState() {
-    this.name = this.item.name;
-    this.itemLevel = this.item.itemLevel;
-    this.reqLevel = this.item.reqLevel;
-    this.type = this.item.type;
+    this.name = this.item.name.val();
+    this.itemLevel = this.item.itemLevel.val();
+    this.reqLevel = this.item.reqLevel.val();
+    this.type = this.item.type.val();
     this.rarity = new RarityState(this.room, this.item.rarity);
     this.customDesc.push(...this.item.getCustomDesc());
-    this.desc = this.item.desc;
+    this.desc = this.item.desc.val();
 
     if (this.item instanceof Equipment) {
+      this.basicAffixes.clear();
       for (let basicAffix of this.item.basicAffixes) {
         this.basicAffixes.push(basicAffix.desc());
       }
 
+      this.magicAffixes.clear();
       for (let magicAffix of this.item.magicAffixes) {
         this.magicAffixes.push(magicAffix.desc());
       }
     }
 
+    this.actions.clear();
     for (let action of this.item.actions) {
       this.actions.push(new ActionState(this.room, action));
     }
@@ -147,12 +151,13 @@ export default class InventoryPanelRoomState extends MySchema {
     this.hookEvent(inventory);
   }
 
-  rebuildState() {
+  async rebuildState() {
     this.items.forEach((item) => item.onDispose());
     this.items.clear();
     this.items = new ArraySchema<ItemState>();
 
-    for (let item of this.inventory.items) {
+    for (let item of this.inventory.items.children) {
+      await item.isPopulated();
       this.items.push(new ItemState(this.room, item));
     }
   }

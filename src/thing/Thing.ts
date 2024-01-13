@@ -20,6 +20,8 @@ export interface Options {
   id?: string;
   /** the callback to listen when the Thing is populated finish */
   onPopulated?: (self: Thing, options?: Options) => void;
+  /** helps for debugging when identifying the correct Thing */
+  tag?: string;
 }
 
 export interface ActionOptions {
@@ -100,6 +102,9 @@ export default abstract class Thing implements EventSender, EventListener {
   /** the `id` of this Thing in the DB, `collection` name also need to set for persistance storage  */
   id?: string;
 
+  /** helps for debugging when identifying the correct Thing */
+  tag?: string;
+
   /** the `collection` name of this Thing in the DB, `id` also need to set for persistance storage\
    * a Thing with `collection` is automatically consider as the root, a root can be embedded in another root (e.g. Item in Player's Inventory)
    */
@@ -111,8 +116,11 @@ export default abstract class Thing implements EventSender, EventListener {
   /** the list of actions executable by client */
   readonly actions: Action[] = [];
 
-  /** the callback to listen when the Thing is populated finish */
-  onPopulatedCallback?: (self: Thing, options?: Options) => void;
+  /** the callback to listen when the Thing is populated finish, used when creating object */
+  protected readonly onPopulatedCallback?: (self: Thing, options?: Options) => void;
+
+  /** to be used by isPopulated(), used to check whether this Thing is populated finish after the object has been created */
+  protected populatedPromise?: Promise<void>;
 
   constructor(parent: Thing, options?: Options) {
     if (parent) {
@@ -129,6 +137,7 @@ export default abstract class Thing implements EventSender, EventListener {
       this.className = options?.className ?? this.constructor.name;
     }
 
+    this.tag = options?.tag;
     this.entityID = options?.entityID;
     this.clock = options?.clock;
 
@@ -288,6 +297,8 @@ export default abstract class Thing implements EventSender, EventListener {
       };
     }
 
+    if (this.tag === "SmallLifePotion") console.log("children: " + this.children.length);
+
     if (this.children.length <= 0) return null;
 
     let data: any = {};
@@ -303,26 +314,31 @@ export default abstract class Thing implements EventSender, EventListener {
 
   /** read the object in DB and call the onPopulated callback */
   protected async populateFromDB(options?: Options) {
-    // return the options directly if no persistance
-    if (!this.collection) {
+    this.populatedPromise = new Promise(async (resolve, reject) => {
+      // return the options directly if no persistance
+      if (!this.collection) {
+        this.onPopulated(options);
+        this.onPopulatedCallback?.(this, options);
+        resolve();
+        return;
+      }
+
+      if (this.id) {
+        let data = await db.collection(this.collection).findOne({ _id: new ObjectId(this.id) });
+        options.json = data;
+      }
+
       this.onPopulated(options);
+
+      // create a new object in DB if id is not provided
+      if (!this.id) await this.saveToDB();
+
       this.onPopulatedCallback?.(this, options);
-      return;
-    }
-
-    if (this.id) {
-      let data = await db.collection(this.collection).findOne({ _id: new ObjectId(this.id) });
-      options.json = data;
-    }
-
-    this.onPopulated(options);
-    this.onPopulatedCallback?.(this, options);
-
-    // create a new object in DB if id is not provided
-    if (!this.id) await this.saveToDB();
+      resolve();
+    });
   }
 
-  /** save the root object to DB, can only be called from the root */
+  /** save the object to DB, inform the root to update self reference in the root with the new ID */
   async saveToDB() {
     if (!this.collection) return;
 
@@ -362,13 +378,18 @@ export default abstract class Thing implements EventSender, EventListener {
 
     if (!this.entityID) return parentOptions;
 
-    let data = parentOptions?.json?.[this.entityID];
+    let data = parentOptions?.json?.[this.entityID] ?? parentOptions?.json?.[Number(this.entityID)];
 
     return { ...parentOptions, json: data };
   }
 
   /** the data is ready, implement this method to create children, hook events etc... */
   protected onPopulated(options?: Options) {}
+
+  /** check whether this Thing is populated finish (e.g. load finish from DB) */
+  isPopulated() {
+    return this.populatedPromise;
+  }
 }
 
 export class ActionEvent extends Event {
