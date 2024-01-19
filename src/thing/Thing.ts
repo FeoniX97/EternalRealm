@@ -1,9 +1,11 @@
-import { Clock } from "colyseus";
+import { Clock, Delayed } from "colyseus";
 import Event from "../event/Event";
 import EventListener from "../event/EventListener";
 import EventSender from "../event/EventSender";
 import { db } from "../app.config";
 import { ObjectId } from "mongodb";
+import gameConfig from "../utils/gameConstant";
+import gameConstant from "../utils/gameConstant";
 
 export interface Options {
   /** the unique name in each Thing which is the field in DB and to receive action from client */
@@ -104,6 +106,12 @@ export default abstract class Thing implements EventSender, EventListener {
 
   /** helps for debugging when identifying the correct Thing */
   tag?: string;
+
+  /** the timeout left to insert/update DB by calling `actualSaveToDB()`, will be set for the first invoking Thing, then will be cleared after the timeout
+   * @ in short, save to DB only after a fixed timeout after the first request is received
+   * @NOTE only applicable to Thing with collection
+   */
+  private dbTimeout?: Delayed;
 
   /** the `collection` name of this Thing in the DB, `id` also need to set for persistance storage\
    * a Thing with `collection` is automatically consider as the root, a root can be embedded in another root (e.g. Item in Player's Inventory)
@@ -338,8 +346,21 @@ export default abstract class Thing implements EventSender, EventListener {
     });
   }
 
-  /** save the object to DB, inform the root to update self reference in the root with the new ID */
-  async saveToDB() {
+  /** to be called from external */
+  saveToDB() {
+    if (!this.collection) {
+      if (this.root && this.root.collection)
+        this.root.saveToDB();
+      return;
+    }
+
+    if (!this.dbTimeout) {
+      this.dbTimeout = this.clock.setTimeout(() => this.actualSaveToDB(), gameConstant.db.timeout);
+      return;
+    }
+  }
+
+  private async actualSaveToDB() {
     if (!this.collection) return;
 
     // create a new object in DB if id is not provided
@@ -347,14 +368,17 @@ export default abstract class Thing implements EventSender, EventListener {
       const result = await db.collection(this.collection).insertOne(this.toJSON(true));
       this.id = result.insertedId.toString();
       // inform the root to update self reference in the root with the new ID
-      if (this.root) {
-        await this.root.saveToDB();
-      }
+      // if (this.root) {
+      //   await this.root.saveToDB();
+      // }
       return;
     }
 
     // update the object in DB
     await db.collection(this.collection).updateOne({ _id: new ObjectId(this.id) }, { $set: this.toJSON(true) });
+  
+    this.dbTimeout?.clear();
+    this.dbTimeout = null;
   }
 
   /** parse the json data and remove some options that's exclusive to the root and parent */

@@ -3,6 +3,7 @@ import NumVal, { NumChangeEvent } from "../../value/NumVal";
 import Event from "../../../event/Event";
 import Living from "../Living";
 import { fromPercent } from "../../../utils/utils";
+import gameConstant from "../../../utils/gameConstant";
 
 export default class Core extends Thing {
   parent: Living;
@@ -15,10 +16,10 @@ export default class Core extends Thing {
   protected onPopulated(options?: Options): void {
     super.onPopulated(options);
 
-    this.str = new NumVal(this, { base: 1, entityID: "str", ...options });
-    this.agi = new NumVal(this, { base: 1, entityID: "agi", ...options });
-    this.int = new NumVal(this, { base: 1, entityID: "int", ...options });
-    this.unallocated = new NumVal(this, { base: 5, entityID: "unallocated", ...options });
+    this.str = new NumVal(this, { base: gameConstant.character.living.core.str.default, entityID: "str", ...options });
+    this.agi = new NumVal(this, { base: gameConstant.character.living.core.agi.default, entityID: "agi", ...options });
+    this.int = new NumVal(this, { base: gameConstant.character.living.core.int.default, entityID: "int", ...options });
+    this.unallocated = new NumVal(this, { base: gameConstant.character.living.core.unallocated, entityID: "unallocated", ...options });
   }
 
   onEventAfter(event: Event): void {

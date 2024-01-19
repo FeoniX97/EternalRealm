@@ -13,9 +13,6 @@ import Amulet from "../../../item/equipment/jewellery/amulet/Amulet";
 import Belt from "../../../item/equipment/jewellery/belt/Belt";
 import Ring from "../../../item/equipment/jewellery/ring/Ring";
 import Weapon from "../../../item/equipment/weapon/Weapon";
-import Staff_0 from "../../../item/equipment/weapon/staff/final/Staff_0";
-import Item_0 from "../../../item/final/Item_0";
-import SmallLifePotion from "../../../item/potion/SmallLifePotion";
 import ArrVal from "../../../value/ArrVal";
 import Player from "./Player";
 

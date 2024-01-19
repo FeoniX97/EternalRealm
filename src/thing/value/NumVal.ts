@@ -64,6 +64,9 @@ export default class NumVal extends Value {
 
     evt.sendEventAfter();
 
+    // save to DB
+    this.saveToDB();
+
     return this.value;
   }
 

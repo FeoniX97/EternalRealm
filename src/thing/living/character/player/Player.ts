@@ -1,4 +1,3 @@
-import { Log } from "../../../../utils/utils";
 import Thing, { Options } from "../../../Thing";
 import Character from "../Character";
 import Inventory from "./Inventory";
