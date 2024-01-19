@@ -1,5 +1,5 @@
-import Thing from "../../Thing";
-import Potion, { PotionOptions } from "./Potion";
+import Thing from "../../../Thing";
+import Potion, { PotionOptions } from "../Potion";
 
 export default class SmallLifePotion extends Potion {
   constructor(parent: Thing, options?: PotionOptions) {

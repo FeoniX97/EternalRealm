@@ -1,6 +1,6 @@
 import Affix from "../Affix";
 
-export default class extends Affix {
+export default class Affix_0 extends Affix {
   private value: number = 5;
 
   desc(): string {

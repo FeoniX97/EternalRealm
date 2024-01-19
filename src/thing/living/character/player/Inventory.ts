@@ -13,6 +13,7 @@ import Amulet from "../../../item/equipment/jewellery/amulet/Amulet";
 import Belt from "../../../item/equipment/jewellery/belt/Belt";
 import Ring from "../../../item/equipment/jewellery/ring/Ring";
 import Weapon from "../../../item/equipment/weapon/Weapon";
+import Staff_0 from "../../../item/equipment/weapon/staff/final/Staff_0";
 import ArrVal from "../../../value/ArrVal";
 import Player from "./Player";
 
@@ -123,9 +124,10 @@ export default class Inventory extends Thing {
 
     // new SmallLifePotion(this.items, { player: this.parent });
 
-    // const staff = new Staff_0(this, { player: parent });
-    // staff.attachMagicAffix(new Affix_0(staff));
-    // staff.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, staff)] });
+    // new Staff_0(this.items, { player: this.parent, tag: "Staff_0", onPopulated: (self) => {
+    //   (self as Staff_0).attachMagicAffix(new Affix_0(self));
+    //   self.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, self as Staff_0)] });
+    // }});
   }
 
   /** Player.Inventory { action: 'use', index: 0 }\

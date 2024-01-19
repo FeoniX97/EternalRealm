@@ -4,7 +4,6 @@ import EventListener from "../event/EventListener";
 import EventSender from "../event/EventSender";
 import { db } from "../app.config";
 import { ObjectId } from "mongodb";
-import gameConfig from "../utils/gameConstant";
 import gameConstant from "../utils/gameConstant";
 
 export interface Options {
@@ -147,7 +146,7 @@ export default abstract class Thing implements EventSender, EventListener {
 
     this.tag = options?.tag;
     this.entityID = options?.entityID;
-    this.clock = options?.clock;
+    this.clock = options?.clock ?? this.parent.clock;
 
     this.parent?.children.push(this);
     this.parent?.hookEvent(this);
@@ -376,7 +375,7 @@ export default abstract class Thing implements EventSender, EventListener {
 
     // update the object in DB
     await db.collection(this.collection).updateOne({ _id: new ObjectId(this.id) }, { $set: this.toJSON(true) });
-  
+
     this.dbTimeout?.clear();
     this.dbTimeout = null;
   }
@@ -384,13 +383,15 @@ export default abstract class Thing implements EventSender, EventListener {
   /** parse the json data and remove some options that's exclusive to the root and parent */
   protected parseOptions(parentOptions?: Options): any {
     // remove options thats exclusive to the root
-    delete parentOptions["id"];
-    delete parentOptions["collection"];
-    delete parentOptions["className"];
+    try {
+      delete parentOptions["id"];
+      delete parentOptions["collection"];
+      delete parentOptions["className"];
 
-    // remove option thats exclusive to the parent
-    delete parentOptions["entityID"];
-    delete parentOptions["onPopulated"];
+      // remove option thats exclusive to the parent
+      delete parentOptions["entityID"];
+      delete parentOptions["onPopulated"];
+    } catch (error) {}
 
     // remove options that is null or undefined
     let o: keyof typeof parentOptions;
@@ -408,7 +409,7 @@ export default abstract class Thing implements EventSender, EventListener {
   }
 
   /** the data is ready, implement this method to create children, hook events etc... */
-  protected onPopulated(options?: Options) {}
+  protected onPopulated(options?: Options) { }
 
   /** check whether this Thing is populated finish (e.g. load finish from DB) */
   isPopulated() {

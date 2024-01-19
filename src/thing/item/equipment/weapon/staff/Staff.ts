@@ -6,9 +6,7 @@ export default abstract class Staff extends Weapon implements TwoHanded, CasterW
   isTwoHanded: boolean;
   isCasterWeapon: boolean = true;
 
-  constructor(name: string, parent: Thing, options?: ItemOptions) {
-    super(name, parent, options);
-
-    this.type = "法杖";
+  constructor(parent: Thing, options?: ItemOptions) {
+    super(parent, { type: "法杖", ...options });
   }
 }

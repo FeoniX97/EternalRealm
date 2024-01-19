@@ -59,12 +59,12 @@ export default abstract class Weapon extends Equipment {
     super.onPopulated(options);
 
     this.phyDamage = new RangeVal(this, { entityID: "phyDamage", ...options });
-    this.fireDamage = new RangeVal(this);
-    this.coldDamage = new RangeVal(this);
-    this.lightningDamage = new RangeVal(this);
-    this.chaosDamage = new RangeVal(this);
-    this.speed = new NumVal(this, 0.8);
-    this.crtRate = new NumVal(this, fromPercent(8));
+    this.fireDamage = new RangeVal(this, { entityID: "fireDamage", ...options });
+    this.coldDamage = new RangeVal(this, { entityID: "coldDamage", ...options });
+    this.lightningDamage = new RangeVal(this, { entityID: "lightningDamage", ...options });
+    this.chaosDamage = new RangeVal(this, { entityID: "chaosDamage", ...options });
+    this.speed = new NumVal(this, { entityID: "speed", base: 0.8, ...options });
+    this.crtRate = new NumVal(this, { entityID: "crtRate", base: fromPercent(8), ...options });
   }
 
   getCustomDesc(): string[] {
