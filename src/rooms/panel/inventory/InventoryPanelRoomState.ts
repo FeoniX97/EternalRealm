@@ -107,7 +107,7 @@ export class ItemState extends MySchema {
       }
 
       this.magicAffixes.clear();
-      for (let magicAffix of this.item.magicAffixes) {
+      for (let magicAffix of this.item.magicAffixes.children) {
         this.magicAffixes.push(magicAffix.desc());
       }
     }

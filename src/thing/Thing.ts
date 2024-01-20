@@ -141,14 +141,14 @@ export default abstract class Thing implements EventSender, EventListener {
     if (options?.collection) {
       this.id = options?.id;
       this.collection = options?.collection;
-      this.className = options?.className ?? this.constructor.name;
     }
 
+    this.className = options?.className ?? this.constructor.name;
     this.tag = options?.tag;
     this.entityID = options?.entityID;
     this.clock = options?.clock ?? this.parent.clock;
 
-    if (this.parent.tag === "ArrVal") this.entityID = this.parent.children.length.toString();
+    if (this.parent?.tag === "ArrVal") this.entityID = this.parent.children.length.toString();
 
     this.parent?.children.push(this);
     this.parent?.hookEvent(this);
@@ -306,9 +306,9 @@ export default abstract class Thing implements EventSender, EventListener {
       };
     }
 
-    let data: any = {
-      className: this.className,
-    };
+    let data: any = {};
+
+    if (this.className) data.className = this.className;
 
     if (this.children.length <= 0) return data;
 
@@ -340,7 +340,7 @@ export default abstract class Thing implements EventSender, EventListener {
       this.onPopulated(options);
 
       // create a new object in DB if id is not provided
-      if (!this.id) await this.saveToDB();
+      if (!this.id) await this.actualSaveToDB();
 
       this.onPopulatedCallback?.(this, options);
       resolve();
@@ -392,6 +392,7 @@ export default abstract class Thing implements EventSender, EventListener {
       // remove option thats exclusive to the parent
       delete parentOptions["entityID"];
       delete parentOptions["onPopulated"];
+      delete parentOptions["tag"];
     } catch (error) {}
 
     // remove options that is null or undefined

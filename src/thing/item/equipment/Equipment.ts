@@ -25,6 +25,7 @@ export default abstract class Equipment extends Item {
           thing.equipment = this;
         },
       },
+      ...options,
     });
 
     this.updateAction("use", "穿戴");

@@ -1,8 +1,8 @@
+import { ItemOptions } from './../../Item';
 import Event from "../../../../event/Event";
 import { fromPercent } from "../../../../utils/utils";
 import NumVal from "../../../value/NumVal";
 import RangeVal from "../../../value/RangeVal";
-import { ItemOptions } from "../../Item";
 import Equipment, { EquipEvent, UnEquipEvent } from "../Equipment";
 
 export interface OneHanded {
@@ -24,6 +24,11 @@ export interface AttackerWeapon {
 
 export interface CasterWeapon {
   isCasterWeapon: boolean;
+}
+
+export interface WeaponOptions extends ItemOptions {
+  fireDamageMin?: number;
+  fireDamageMax?: number;
 }
 
 export default abstract class Weapon extends Equipment {
@@ -55,11 +60,11 @@ export default abstract class Weapon extends Equipment {
     return "isCasterWeapon" in obj;
   }
 
-  protected onPopulated(options?: ItemOptions): void {
+  protected onPopulated(options?: WeaponOptions): void {
     super.onPopulated(options);
 
     this.phyDamage = new RangeVal(this, { entityID: "phyDamage", ...options });
-    this.fireDamage = new RangeVal(this, { entityID: "fireDamage", ...options });
+    this.fireDamage = new RangeVal(this, { entityID: "fireDamage", min: options?.fireDamageMin, max: options?.fireDamageMax, ...options });
     this.coldDamage = new RangeVal(this, { entityID: "coldDamage", ...options });
     this.lightningDamage = new RangeVal(this, { entityID: "lightningDamage", ...options });
     this.chaosDamage = new RangeVal(this, { entityID: "chaosDamage", ...options });

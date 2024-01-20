@@ -30,7 +30,7 @@ export class AuthRoom extends Room<AuthRoomState> {
     const token = player.id + client.sessionId;
 
     // create player character instance
-    const playerInstance = new Player(null, { id: player.id, clock: this.clock, tag: 'player', onPopulated(self, options) {
+    const playerInstance = new Player(null, { id: player.id, clock: this.clock, onPopulated(self, options) {
         // define rooms for the player
       server.define("character_panel_room_" + token, CharacterPanelRoom, {
         token,

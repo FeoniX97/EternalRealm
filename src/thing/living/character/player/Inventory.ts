@@ -122,9 +122,9 @@ export default class Inventory extends Thing {
 
     // new SmallLifePotion(this.items, { player: this.parent });
 
-    new Staff_0(this.items, { player: this.parent, onPopulated: (self) => {
-      self.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, self as Staff_0)] });
-    }});
+    // new Staff_0(this.items, { player: this.parent, onPopulated: (self) => {
+    //   self.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, self as Staff_0)] });
+    // }});
   }
 
   /** Player.Inventory { action: 'use', index: 0 }\

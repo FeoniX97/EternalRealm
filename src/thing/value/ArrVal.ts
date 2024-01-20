@@ -1,4 +1,4 @@
-import ThingFactory from "../../utils/ThingFactory";
+import { createThing } from "../../utils/utils";
 import Thing, { Options } from "../Thing";
 
 interface ArrValOptions<T extends Thing> extends Options {
@@ -26,8 +26,6 @@ export default class ArrVal<T extends Thing> extends Thing {
     if (!this.children) this.children = [];
 
     if (options?.json && options?.json?.length > 0) {
-      if (!options?.populate) return;
-
       // populate the JSON data array
       const first = options?.json?.[0];
 
@@ -36,7 +34,7 @@ export default class ArrVal<T extends Thing> extends Thing {
         if (first.className) {
           // populate by reference
           for (let i = 0; i < length; i++) {
-            ThingFactory.createThing<T>(this, i.toString(), {
+            createThing<T>(this, i.toString(), {
               id: options?.json?.[i]?.id,
               collection: options?.json?.[i]?.collection,
               className: options?.json?.[i]?.className,

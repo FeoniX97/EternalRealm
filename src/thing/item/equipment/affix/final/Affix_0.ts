@@ -5,9 +5,11 @@ export default class Affix_0 extends Affix {
   private value: number = 5;
 
   protected onPopulated(options?: Options): void {
-      super.onPopulated(options);
+    console.log(JSON.stringify(options) + "\n");
 
-      this.value = options.json?.value ?? 5;
+    super.onPopulated(options);
+
+    this.value = options.json?.value ?? 5;
   }
 
   desc(): string {
