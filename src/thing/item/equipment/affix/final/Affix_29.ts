@@ -8,10 +8,10 @@ export default class extends Affix {
   }
 
   protected onEnable(): void {
-    this.parent.player.offence.spell.speed.increasePercent(this.value);
+    this.equipment.player.offence.spell.speed.increasePercent(this.value);
   }
 
   protected onDisable(): void {
-    this.parent.player.offence.spell.speed.increasePercent(-this.value);
+    this.equipment.player.offence.spell.speed.increasePercent(-this.value);
   }
 }

@@ -8,10 +8,10 @@ export default class extends Affix {
   }
 
   protected onEnable(): void {
-    this.parent.player.resource.es.max.increasePercent(this.value);
+    this.equipment.player.resource.es.max.increasePercent(this.value);
   }
 
   protected onDisable(): void {
-   this.parent.player.resource.es.max.increasePercent(-this.value);
+   this.equipment.player.resource.es.max.increasePercent(-this.value);
   }
 }

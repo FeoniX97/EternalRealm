@@ -5,7 +5,7 @@ export interface BasicAffix {}
 export interface MagicAffix {}
 
 export default abstract class Affix extends Thing {
-  parent: Equipment;
+  equipment: Equipment;
 
   /** lowest tier is tier 1 */
   tier: number;

@@ -8,10 +8,10 @@ export default class extends Affix {
   }
 
   protected onEnable(): void {
-    this.parent.player.offence.accuracyRating.inc(this.value);
+    this.equipment.player.offence.accuracyRating.inc(this.value);
   }
 
   protected onDisable(): void {
-    this.parent.player.offence.accuracyRating.dec(this.value);
+    this.equipment.player.offence.accuracyRating.dec(this.value);
   }
 }

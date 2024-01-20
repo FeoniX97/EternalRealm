@@ -1,4 +1,5 @@
 import Thing, { Options } from "../thing/Thing";
+// import Affix_0 from "../thing/item/equipment/affix/final/Affix_0";
 import Staff_0 from "../thing/item/equipment/weapon/staff/final/Staff_0";
 import Item_0 from "../thing/item/final/Item_0";
 import SmallLifePotion from "../thing/item/potion/final/SmallLifePotion";

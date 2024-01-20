@@ -19,7 +19,7 @@ export default class ArrVal<T extends Thing> extends Thing {
   children: T[];
 
   constructor(parent: Thing, options?: ArrValOptions<T>) {
-    super(parent, options);
+    super(parent, { tag: "ArrVal", ...options });
   }
 
   protected onPopulated(options?: ArrValOptions<T>): void {
@@ -61,10 +61,12 @@ export default class ArrVal<T extends Thing> extends Thing {
    * add the Thing to the list
    * @param callback `index` is the new size of the array, to be store in the Thing as the entityID
    */
-  add(callback: (index: number) => T) {
+  add(item: T) {
     let newSize = this.children.length + 1;
 
-    this.children.push(callback(newSize));
+    this.children.push(item);
+
+    this.saveToDB();
   }
 
   get(index: number) {

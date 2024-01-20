@@ -9,12 +9,12 @@ export default class extends Affix {
   }
 
   protected onEnable(): void {
-    this.parent.player.offence.attack.chaos.max.inc(this.max);
-    this.parent.player.offence.attack.chaos.min.inc(this.min);
+    this.equipment.player.offence.attack.chaos.max.inc(this.max);
+    this.equipment.player.offence.attack.chaos.min.inc(this.min);
   }
 
   protected onDisable(): void {
-    this.parent.player.offence.attack.chaos.min.dec(this.min);
-    this.parent.player.offence.attack.chaos.max.dec(this.max);
+    this.equipment.player.offence.attack.chaos.min.dec(this.min);
+    this.equipment.player.offence.attack.chaos.max.dec(this.max);
   }
 }

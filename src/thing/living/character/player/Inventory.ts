@@ -1,9 +1,7 @@
 import Event from "../../../../event/Event";
-import { Log } from "../../../../utils/utils";
 import Thing, { Options } from "../../../Thing";
 import Item from "../../../item/Item";
-import Equipment, { EquipEvent, UnEquipEvent } from "../../../item/equipment/Equipment";
-import Affix_0 from "../../../item/equipment/affix/final/Affix_0";
+import Equipment from "../../../item/equipment/Equipment";
 import BodyArmour from "../../../item/equipment/armour/body_armour/BodyArmour";
 import Boots from "../../../item/equipment/armour/boots/Boots";
 import Gloves from "../../../item/equipment/armour/gloves/Gloves";
@@ -124,10 +122,9 @@ export default class Inventory extends Thing {
 
     // new SmallLifePotion(this.items, { player: this.parent });
 
-    // new Staff_0(this.items, { player: this.parent, tag: "Staff_0", onPopulated: (self) => {
-    //   (self as Staff_0).attachMagicAffix(new Affix_0(self));
-    //   self.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, self as Staff_0)] });
-    // }});
+    new Staff_0(this.items, { player: this.parent, onPopulated: (self) => {
+      self.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, self as Staff_0)] });
+    }});
   }
 
   /** Player.Inventory { action: 'use', index: 0 }\
@@ -151,8 +148,7 @@ export default class Inventory extends Thing {
 
     item.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, item)] });
 
-    this.items.add(() => item)
-    //this.items.push(item);
+    this.items.add(item)
 
     this.root.saveToDB();
   }

@@ -148,6 +148,8 @@ export default abstract class Thing implements EventSender, EventListener {
     this.entityID = options?.entityID;
     this.clock = options?.clock ?? this.parent.clock;
 
+    if (this.parent.tag === "ArrVal") this.entityID = this.parent.children.length.toString();
+
     this.parent?.children.push(this);
     this.parent?.hookEvent(this);
 
@@ -304,11 +306,11 @@ export default abstract class Thing implements EventSender, EventListener {
       };
     }
 
-    if (this.tag === "SmallLifePotion") console.log("children: " + this.children.length);
+    let data: any = {
+      className: this.className,
+    };
 
-    if (this.children.length <= 0) return null;
-
-    let data: any = {};
+    if (this.children.length <= 0) return data;
 
     for (let child of this.children) {
       if (child.entityID) {
@@ -348,8 +350,7 @@ export default abstract class Thing implements EventSender, EventListener {
   /** to be called from external */
   saveToDB() {
     if (!this.collection) {
-      if (this.root && this.root.collection)
-        this.root.saveToDB();
+      if (this.root && this.root.collection) this.root.saveToDB();
       return;
     }
 
@@ -409,7 +410,7 @@ export default abstract class Thing implements EventSender, EventListener {
   }
 
   /** the data is ready, implement this method to create children, hook events etc... */
-  protected onPopulated(options?: Options) { }
+  protected onPopulated(options?: Options) {}
 
   /** check whether this Thing is populated finish (e.g. load finish from DB) */
   isPopulated() {

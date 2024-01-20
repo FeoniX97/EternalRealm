@@ -1,5 +1,6 @@
 import Event from "../../../event/Event";
 import Player from "../../living/character/player/Player";
+import ArrVal from "../../value/ArrVal";
 import Item, { ItemOptions } from "../Item";
 import Affix from "./affix/Affix";
 
@@ -12,10 +13,19 @@ export default abstract class Equipment extends Item {
   readonly basicAffixes: Affix[] = [];
 
   /** the magic affix section */
-  readonly magicAffixes: Affix[] = [];
+  magicAffixes: ArrVal<Affix>;
 
   protected onPopulated(options?: ItemOptions): void {
     super.onPopulated(options);
+
+    this.magicAffixes = new ArrVal<Affix>(this, {
+      entityID: "magicAffixes",
+      populate: {
+        onPopulated: (arrVal, thing, options) => {
+          thing.equipment = this;
+        },
+      },
+    });
 
     this.updateAction("use", "穿戴");
     this.addActionEvent("use", new EquipEvent(this));
@@ -39,29 +49,27 @@ export default abstract class Equipment extends Item {
     // only allow attach to jewelleries
     //if (!(this instanceof Jewellery)) return;
 
-    affix.parent = this;
     this.basicAffixes.push(affix);
   }
 
   /** attach an affix to the magic affix section */
-  attachMagicAffix(affix: Affix) {
-    // only allow attach to the same parent equipment
-    if (affix.parent && affix.parent != this) return;
+  // attachMagicAffix(affix: Affix) {
+  //   // only allow attach to the same parent equipment
+  //   if (affix.parent && affix.parent != this) return;
 
-    affix.parent = this;
-    this.magicAffixes.push(affix);
-  }
+  //   this.magicAffixes.add(affix);
+  // }
 
   /** enable all affixes in this equipment */
   enableAffixes() {
     this.basicAffixes.forEach((affix) => affix.enable());
-    this.magicAffixes.forEach((affix) => affix.enable());
+    this.magicAffixes.children.forEach((affix) => affix.enable());
   }
 
   /** disable all affixes in this equipment */
   disableAffixes() {
     this.basicAffixes.forEach((affix) => affix.disable());
-    this.magicAffixes.forEach((affix) => affix.disable());
+    this.magicAffixes.children.forEach((affix) => affix.disable());
   }
 }
 

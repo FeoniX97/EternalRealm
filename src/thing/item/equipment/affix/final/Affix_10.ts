@@ -8,10 +8,10 @@ export default class extends Affix {
   }
 
   protected onEnable(): void {
-    this.parent.player.core.agi.inc(this.value);
+    this.equipment.player.core.agi.inc(this.value);
   }
 
   protected onDisable(): void {
-   this.parent.player.core.agi.dec(this.value);
+   this.equipment.player.core.agi.dec(this.value);
   }
 }

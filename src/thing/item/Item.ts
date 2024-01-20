@@ -1,5 +1,4 @@
 import Event from "../../event/Event";
-import { Log } from "../../utils/utils";
 import Rarity, { RarityType } from "../Rarity";
 import Thing, { Options } from "../Thing";
 import Player from "../living/character/player/Player";

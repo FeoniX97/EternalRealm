@@ -8,10 +8,10 @@ export default class extends Affix {
   }
 
   protected onEnable(): void {
-    this.parent.player.resource.mana.regenPercentPerSec += this.value;
+    this.equipment.player.resource.mana.regenPercentPerSec += this.value;
   }
 
   protected onDisable(): void {
-    this.parent.player.resource.mana.regenPercentPerSec -= this.value;
+    this.equipment.player.resource.mana.regenPercentPerSec -= this.value;
   }
 }
