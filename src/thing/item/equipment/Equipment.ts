@@ -18,14 +18,14 @@ export default abstract class Equipment extends Item {
   protected onPopulated(options?: ItemOptions): void {
     super.onPopulated(options);
 
-    this.magicAffixes = new ArrVal<Affix>(this, {
+    this.magicAffixes = new ArrVal(this, {
       entityID: "magicAffixes",
+      ...options,
       populate: {
         onPopulated: (arrVal, thing, options) => {
           thing.equipment = this;
         },
       },
-      ...options,
     });
 
     this.updateAction("use", "穿戴");

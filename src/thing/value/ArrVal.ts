@@ -35,11 +35,13 @@ export default class ArrVal<T extends Thing> extends Thing {
           // populate by reference
           for (let i = 0; i < length; i++) {
             createThing<T>(this, i.toString(), {
+              ...options,
               id: options?.json?.[i]?.id,
               collection: options?.json?.[i]?.collection,
               className: options?.json?.[i]?.className,
-              onPopulated: (thing: Thing, _options: Options) => options?.populate?.onPopulated?.(this, thing as T, _options),
-              ...options,
+              onPopulated: (thing: Thing, _options: Options) => {
+                options?.populate?.onPopulated?.(this, thing as T, _options);
+              },
             });
           }
         } else {
@@ -50,7 +52,7 @@ export default class ArrVal<T extends Thing> extends Thing {
     } else if (options?.populate?.onPopulate) {
       // populate default Things by options
       for (let i = 0; i < (options.populate.count ?? 1); i++) {
-        options.populate.onPopulate(this, { entityID: i.toString(), onPopulated: (thing, _options) => options?.populate?.onPopulated?.(this, thing as T, _options), ...options });
+        options.populate.onPopulate(this, { ...options, entityID: i.toString(), onPopulated: (thing, _options) => options?.populate?.onPopulated?.(this, thing as T, _options) });
       }
     }
   }

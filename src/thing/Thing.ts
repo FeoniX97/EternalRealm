@@ -11,7 +11,7 @@ export interface Options {
   entityID?: string;
   /** the room clock of Colyseus */
   clock?: Clock;
-  /** the data read from DB */
+  /** the data to populate, either read from DB or taken from default */
   json?: any;
   /** the `collection` name of this Thing in the DB, `id` also need to set for persistance storage */
   collection?: string;
@@ -381,7 +381,6 @@ export default abstract class Thing implements EventSender, EventListener {
     this.dbTimeout = null;
   }
 
-  /** parse the json data and remove some options that's exclusive to the root and parent */
   protected parseOptions(parentOptions?: Options): any {
     // remove options thats exclusive to the root
     try {

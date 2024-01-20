@@ -104,6 +104,7 @@ export default class Inventory extends Thing {
 
     this.items = new ArrVal(this, {
       entityID: "items",
+      ...options,
       populate: {
         // we dont populate default Things, so no need 'onPopulate'
         // onPopulate: (arrVal, options) => {
@@ -117,7 +118,6 @@ export default class Inventory extends Thing {
           thing.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, thing)] });
         },
       },
-      ...options,
     });
 
     // new SmallLifePotion(this.items, { player: this.parent });
@@ -148,7 +148,7 @@ export default class Inventory extends Thing {
 
     item.registerAction("discard", this.discardItem, { label: "丢弃", events: [new InventoryDiscardEvent(this, item)] });
 
-    this.items.add(item)
+    this.items.add(item);
 
     this.root.saveToDB();
   }

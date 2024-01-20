@@ -1,5 +1,4 @@
 import Thing from "../../../../../Thing";
-import Affix_0 from "../../../affix/final/Affix_0";
 import { WeaponOptions } from "../../Weapon";
 import Staff from "../Staff";
 
@@ -9,8 +8,6 @@ export default class Staff_0 extends Staff {
   }
 
   protected onPopulated(options?: WeaponOptions): void {
-    console.log(JSON.stringify(options) + "\n");
-
     super.onPopulated(options);
 
     // console.log(JSON.stringify(options));
